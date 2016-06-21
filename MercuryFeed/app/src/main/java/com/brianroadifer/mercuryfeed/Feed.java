@@ -14,14 +14,14 @@ public class Feed {
     String pubDate;
     String thumbnailUrl;
     String author;
-    String category;
+    String headTitle;
 
-    public String getCategory() {
-        return category;
+    public String getHeadTitle() {
+        return headTitle;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setHeadTitle(String headTitle) {
+        this.headTitle = headTitle;
     }
 
     public String getAuthor() {

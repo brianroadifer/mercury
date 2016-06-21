@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -41,17 +42,17 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
         final Feed current = feeds.get(position);
         holder.Title.setText(current.getTitle());
-        holder.Description.setText(current.getDescription());
         SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z", Locale.US);
         Date newDate = null;
         try {
             newDate = format.parse(current.getPubDate());
             format = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US);
             String date = format.format(newDate);
-            holder.Date.setText(date);
+            holder.Info.setText(current.getHeadTitle() + " / " + date);
         } catch (ParseException e) {
-            holder.Date.setText(current.getPubDate());
+            holder.Info.setText(current.getHeadTitle() + " / "+ current.getPubDate());
         }
+        holder.Content.setText(current.getDescription());
         Picasso.with(context).load(current.getThumbnailUrl()).into(holder.Thumbnail);
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,16 +70,16 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView Title, Description, Date;
+        TextView Title, Content, Info;
         ImageView Thumbnail;
-        CardView cardView;
+        GridLayout cardView;
         public ViewHolder(View itemView) {
             super(itemView);
-            Title = (TextView)itemView.findViewById(R.id.title_text);
-            Date = (TextView)itemView.findViewById(R.id.date_text);
-            Description = (TextView)itemView.findViewById(R.id.description_text);
-            Thumbnail = (ImageView)itemView.findViewById(R.id.thumb_img);
-            cardView = (CardView) itemView.findViewById(R.id.card_view);
+            Title = (TextView)itemView.findViewById(R.id.news_title);
+            Content = (TextView) itemView.findViewById(R.id.news_content);
+            Info = (TextView)itemView.findViewById(R.id.news_info);
+            Thumbnail = (ImageView)itemView.findViewById(R.id.news_image);
+            cardView = (GridLayout) itemView.findViewById(R.id.card_view);
         }
     }
 }

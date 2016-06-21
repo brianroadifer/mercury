@@ -25,7 +25,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
  */
 public class ReadRss extends AsyncTask<Void, Void, Void>{
     Context context;
-    String address = "http://www.cgpgrey.com/blog?format=rss";
+    String address = "http://rss.nytimes.com/services/xml/rss/nyt/World.xml";
+//    String address = "http://www.cgpgrey.com/blog?format=rss";
     ProgressDialog progress;
     URL url;
     ArrayList<Feed> feeds;
@@ -76,9 +77,6 @@ public class ReadRss extends AsyncTask<Void, Void, Void>{
                         else if(current.getNodeName().equalsIgnoreCase("media:credit") || current.getNodeName().equalsIgnoreCase("dc:creator")) {
                             item.setAuthor(current.getTextContent());
                         }
-                        else if(current.getNodeName().equalsIgnoreCase("category") || current.getNodeName().equalsIgnoreCase("media:category")) {
-                            item.setCategory(current.getTextContent());
-                        }
 
                     }
                     feeds.add(item);
@@ -97,7 +95,6 @@ public class ReadRss extends AsyncTask<Void, Void, Void>{
         super.onPostExecute(aVoid);
         MyAdapter adapter = new MyAdapter(feeds, context);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.addItemDecoration(new VerticalSpace(50));
         recyclerView.setAdapter(adapter);
     }
 
