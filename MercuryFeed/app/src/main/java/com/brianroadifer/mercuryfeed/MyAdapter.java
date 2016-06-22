@@ -2,7 +2,6 @@ package com.brianroadifer.mercuryfeed;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,8 +56,13 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, ArticleWeb.class);
+                Intent intent = new Intent(context, FeedActivity.class);
                 intent.putExtra("Link", current.getLink());
+                intent.putExtra("Author", current.getAuthor());
+                intent.putExtra("Date", current.getPubDate());
+                intent.putExtra("Image", current.getThumbnailUrl());
+                intent.putExtra("Description", current.getDescription());
+                intent.putExtra("Title", current.getTitle());
                context.startActivity(intent);
             }
         });

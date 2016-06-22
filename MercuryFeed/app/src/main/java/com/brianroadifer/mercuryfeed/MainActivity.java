@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         ReadRss readRss = new ReadRss(this, recyclerView);
-        readRss.execute();
+        readRss.execute("http://rss.nytimes.com/services/xml/rss/nyt/World.xml", "http://www.cgpgrey.com/blog?format=rss");
     }
 
     @Override

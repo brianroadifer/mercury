@@ -23,14 +23,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 /**
  * Created by Brian Roadifer on 5/28/2016.
  */
-public class ReadRss extends AsyncTask<Void, Void, Void>{
+public class ReadRss extends AsyncTask<String, Void, Void>{
     Context context;
-    String address = "http://rss.nytimes.com/services/xml/rss/nyt/World.xml";
-//    String address = "http://www.cgpgrey.com/blog?format=rss";
+    String[] address = {"http://rss.nytimes.com/services/xml/rss/nyt/World.xml", "http://www.cgpgrey.com/blog?format=rss"};
     ProgressDialog progress;
     URL url;
     ArrayList<Feed> feeds;
     RecyclerView recyclerView;
+    int channelSpot = 0;
 
     public ReadRss(Context context, RecyclerView recyclerView){
         this.context = context;
@@ -39,8 +39,8 @@ public class ReadRss extends AsyncTask<Void, Void, Void>{
         progress.setMessage("Loading RSS...");
     }
     @Override
-    protected Void doInBackground(Void... params) {
-        ProcessXml(GetData());
+    protected Void doInBackground(String... params) {
+        ProcessXml(GetData(address[1]));
         return null;
     }
 
@@ -48,15 +48,22 @@ public class ReadRss extends AsyncTask<Void, Void, Void>{
         if(data != null){
             feeds = new ArrayList<>();
             Element root =  data.getDocumentElement();
-            Log.d("getbrianchild", root.getChildNodes().item(0).getNodeName());
-            Node channel = root.getChildNodes().item(0);
+            for (int i = 0 ; i < root.getChildNodes().getLength() -1; i++) {
+                if(root.getChildNodes().item(i).getNodeName().equalsIgnoreCase("channel"))
+                    channelSpot = i;
+            }
+            Node channel = root.getChildNodes().item(channelSpot);
             NodeList items = channel.getChildNodes();
-
+            String TITLE = "";
             for (int i = 0; i< items.getLength(); i++) {
                 Node node = items.item(i);
+                if(node.getNodeName().equalsIgnoreCase("title")){
+                    TITLE = node.getTextContent();
+                }
                 if(node.getNodeName().equalsIgnoreCase("item")){
-                    Feed item = new Feed();
                     NodeList nodeChilds = node.getChildNodes();
+                    Feed item = new Feed();
+                    item.setHeadTitle(TITLE);
                     for (int j = 0; j< nodeChilds.getLength(); j++){
                         Node current = nodeChilds.item(j);
                         if(current.getNodeName().equalsIgnoreCase("title")){
@@ -98,16 +105,16 @@ public class ReadRss extends AsyncTask<Void, Void, Void>{
         recyclerView.setAdapter(adapter);
     }
 
-    public Document GetData(){
+    public Document GetData(String rssUrl){
         try {
-            url = new URL(address);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            InputStream inputStream = connection.getInputStream();
-            DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = builderFactory.newDocumentBuilder();
-            Document xmlDoc = builder.parse(inputStream);
-            return xmlDoc;
+                url = new URL(rssUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                InputStream inputStream = connection.getInputStream();
+                DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = builderFactory.newDocumentBuilder();
+                Document xmlDoc = builder.parse(inputStream);
+                return xmlDoc;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
