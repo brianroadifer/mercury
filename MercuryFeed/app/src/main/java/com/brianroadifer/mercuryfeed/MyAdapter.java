@@ -15,6 +15,7 @@ import com.squareup.picasso.Picasso;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -22,11 +23,11 @@ import java.util.Locale;
  * Created by Brian Roadifer on 5/28/2016.
  */
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
-    ArrayList<Feed> feeds;
+    Feed feed;
     Context context;
 
-    public MyAdapter(ArrayList<Feed> feeds, Context context) {
-        this.feeds = feeds;
+    public MyAdapter(Feed feed, Context context) {
+        this.feed = feed;
         this.context = context;
     }
 
@@ -39,24 +40,23 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Feed current = feeds.get(position);
+        final Item current = feed.Items.get(position);
         holder.Title.setText(current.getTitle());
         SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z", Locale.US);
-        Date newDate = null;
+        Date newDate;
         try {
             newDate = format.parse(current.getPubDate());
             format = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US);
-            String date = format.format(newDate);
-            holder.Info.setText(current.getHeadTitle() + " / " + date);
+            holder.Info.setText(feed.Title + " / by " +current.getAuthor()+ " / " + Difference(newDate));
         } catch (ParseException e) {
-            holder.Info.setText(current.getHeadTitle() + " / "+ current.getPubDate());
+            holder.Info.setText(feed.Title + " / "+ current.getPubDate());
         }
         holder.Content.setText(current.getDescription());
         Picasso.with(context).load(current.getThumbnailUrl()).into(holder.Thumbnail);
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, FeedActivity.class);
+                Intent intent = new Intent(context, ItemActivity.class);
                 intent.putExtra("Link", current.getLink());
                 intent.putExtra("Author", current.getAuthor());
                 intent.putExtra("Date", current.getPubDate());
@@ -70,7 +70,12 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return feeds.size();
+        try{
+            return feed.Items.size();
+        }catch (NullPointerException e){
+            return 0;
+        }
+
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -85,5 +90,30 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             Thumbnail = (ImageView)itemView.findViewById(R.id.news_image);
             cardView = (GridLayout) itemView.findViewById(R.id.card_view);
         }
+    }
+    public String Difference(Date pastDate){
+        Date current = Calendar.getInstance().getTime();
+        long difference = current.getTime() - pastDate.getTime();
+        int days = (int) (difference/(1000*60*60*24));
+        if(days > 1){
+            return days + " days ago";
+        }else if(days == 1) {
+            return days + " day ago";
+        }
+        int hours = (int) (difference/(1000*60*60));
+        if(hours > 1){
+            return hours + " hours ago";
+        }else if(hours == 1){
+            return hours + " hour ago";
+        }
+        int min = (int) (difference/(1000*60));
+        if(min > 1){
+            return min + " minutes ago";
+        }else if(min == 1){
+            return min + " minute ago";
+        }else{
+            return "Few seconds ago";
+        }
+
     }
 }

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,72 +22,93 @@ import javax.xml.parsers.DocumentBuilderFactory;
 /**
  * Created by Brian Roadifer on 5/28/2016.
  */
-public class ReadRss extends AsyncTask<String, Void, Void>{
+public class ReadRss extends AsyncTask<Feed, Void, Void>{
     Context context;
-    String[] address = {"http://rss.nytimes.com/services/xml/rss/nyt/World.xml", "http://www.cgpgrey.com/blog?format=rss"};
+    Feed feed;
     ProgressDialog progress;
     URL url;
-    ArrayList<Feed> feeds;
+    public ArrayList<Item> feedItems;
     RecyclerView recyclerView;
+    boolean atomFeed = false;
     int channelSpot = 0;
 
     public ReadRss(Context context, RecyclerView recyclerView){
         this.context = context;
         this.recyclerView = recyclerView;
         progress = new ProgressDialog(context);
-        progress.setMessage("Loading RSS...");
+        progress.setMessage("Loading Feed...");
     }
     @Override
-    protected Void doInBackground(String... params) {
-        ProcessXml(GetData(address[1]));
+    protected Void doInBackground(Feed... params) {
+        feed = params[0];
+        ProcessXml(GetData(params[0].FeedUrl));
         return null;
     }
 
-    private void ProcessXml(Document data) {
+    public void ProcessXml(Document data) {
         if(data != null){
-            feeds = new ArrayList<>();
+            feedItems = new ArrayList<>();
             Element root =  data.getDocumentElement();
-            for (int i = 0 ; i < root.getChildNodes().getLength() -1; i++) {
-                if(root.getChildNodes().item(i).getNodeName().equalsIgnoreCase("channel"))
-                    channelSpot = i;
+            Node channel;
+            if(root.getNodeName().equalsIgnoreCase("feed")){
+                channel = root;
+                atomFeed = true;
+            }else{
+                for (int i = 0 ; i < root.getChildNodes().getLength() -1; i++) {
+                    if(root.getChildNodes().item(i).getNodeName().equalsIgnoreCase("channel"))
+                        channelSpot = i;
+                }
+                channel = root.getChildNodes().item(channelSpot);
             }
-            Node channel = root.getChildNodes().item(channelSpot);
+
             NodeList items = channel.getChildNodes();
             String TITLE = "";
             for (int i = 0; i< items.getLength(); i++) {
                 Node node = items.item(i);
                 if(node.getNodeName().equalsIgnoreCase("title")){
-                    TITLE = node.getTextContent();
+                    feed.Title = (node.getTextContent());
                 }
-                if(node.getNodeName().equalsIgnoreCase("item")){
+                if(node.getNodeName().equalsIgnoreCase("item") || node.getNodeName().equalsIgnoreCase("entry")){
                     NodeList nodeChilds = node.getChildNodes();
-                    Feed item = new Feed();
+                    Item item = new Item();
                     item.setHeadTitle(TITLE);
                     for (int j = 0; j< nodeChilds.getLength(); j++){
                         Node current = nodeChilds.item(j);
                         if(current.getNodeName().equalsIgnoreCase("title")){
                             item.setTitle(current.getTextContent());
                         }else if(current.getNodeName().equalsIgnoreCase("link")){
-                            item.setLink(current.getTextContent());
+
+                            if(atomFeed){
+                                String url = current.getAttributes().getNamedItem("href").getTextContent();
+                                item.setLink(url);
+                            }else{
+                                item.setLink(current.getTextContent());
+                            }
                         }
-                        else if(current.getNodeName().equalsIgnoreCase("description")){
+                        else if(current.getNodeName().equalsIgnoreCase("description") || current.getNodeName().equalsIgnoreCase("content")){
                             item.setDescription(current.getTextContent());
                         }
-                        else if(current.getNodeName().equalsIgnoreCase("pubDate")) {
+                        else if(current.getNodeName().equalsIgnoreCase("pubDate") || current.getNodeName().equalsIgnoreCase("published")) {
                             item.setPubDate(current.getTextContent());
                         }
                         else if(current.getNodeName().equalsIgnoreCase("media:thumbnail") || current.getNodeName().equalsIgnoreCase("media:content")) {
                             String url = current.getAttributes().getNamedItem("url").getTextContent();
                             item.setThumbnailUrl(url);
                         }
-                        else if(current.getNodeName().equalsIgnoreCase("media:credit") || current.getNodeName().equalsIgnoreCase("dc:creator")) {
-                            item.setAuthor(current.getTextContent());
+                        else if(current.getNodeName().equalsIgnoreCase("media:credit") || current.getNodeName().equalsIgnoreCase("dc:creator") || current.getNodeName().equalsIgnoreCase("author")) {
+                            if(atomFeed){
+                                item.setAuthor(current.getChildNodes().item(0).getTextContent());
+                            }else{
+                                item.setAuthor(current.getTextContent());
+                            }
+
                         }
 
                     }
-                    feeds.add(item);
+                    this.feedItems.add(item);
                 }
             }
+            feed.Items = (feedItems);
         }
     }
 
@@ -100,7 +120,7 @@ public class ReadRss extends AsyncTask<String, Void, Void>{
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        MyAdapter adapter = new MyAdapter(feeds, context);
+        MyAdapter adapter = new MyAdapter(feed, context);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(adapter);
     }

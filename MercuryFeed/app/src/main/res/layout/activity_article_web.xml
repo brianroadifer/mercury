@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/web_view"
-    tools:context="com.brianroadifer.mercuryfeed.ArticleWeb">
+    tools:context=".ArticleWeb">
 
     <include
         layout="@layout/app_bar_navigation"
