@@ -1,7 +1,6 @@
-package com.brianroadifer.mercuryfeed;
+package com.brianroadifer.mercuryfeed.Helpers;
 
-import android.widget.Toast;
-
+import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 

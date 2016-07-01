@@ -3,21 +3,21 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="com.brianroadifer.mercuryfeed.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="com.brianroadifer.mercuryfeed.Activities.SettingsActivity$GeneralPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general" />
 
     <header
-        android:fragment="com.brianroadifer.mercuryfeed.SettingsActivity$NotificationPreferenceFragment"
+        android:fragment="com.brianroadifer.mercuryfeed.Activities.SettingsActivity$NotificationPreferenceFragment"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/pref_header_notifications" />
 
     <header
-        android:fragment="com.brianroadifer.mercuryfeed.SettingsActivity$DataSyncPreferenceFragment"
+        android:fragment="com.brianroadifer.mercuryfeed.Activities.SettingsActivity$DataSyncPreferenceFragment"
         android:icon="@drawable/ic_sync_black_24dp"
         android:title="@string/pref_header_data_sync" />
     <header
-        android:fragment="com.brianroadifer.mercuryfeed.SettingsActivity$ThemePreferenceFragment"
+        android:fragment="com.brianroadifer.mercuryfeed.Activities.SettingsActivity$ThemePreferenceFragment"
         android:title="Theme Settings"/>
 
 </preference-headers>

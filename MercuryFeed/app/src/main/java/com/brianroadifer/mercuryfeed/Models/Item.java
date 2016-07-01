@@ -1,4 +1,4 @@
-package com.brianroadifer.mercuryfeed;
+package com.brianroadifer.mercuryfeed.Models;
 
 import org.xmlpull.v1.XmlPullParser;
 

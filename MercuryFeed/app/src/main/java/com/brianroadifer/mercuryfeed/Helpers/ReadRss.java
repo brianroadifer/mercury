@@ -1,10 +1,13 @@
-package com.brianroadifer.mercuryfeed;
+package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+
+import com.brianroadifer.mercuryfeed.Models.Feed;
+import com.brianroadifer.mercuryfeed.Models.Item;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -54,7 +57,7 @@ public class ReadRss extends AsyncTask<Feed, Void, Void>{
                 channel = root;
                 atomFeed = true;
             }else{
-                for (int i = 0 ; i < root.getChildNodes().getLength() -1; i++) {
+                for (int i = 0 ; i < root.getChildNodes().getLength(); i++) {
                     if(root.getChildNodes().item(i).getNodeName().equalsIgnoreCase("channel"))
                         channelSpot = i;
                 }
@@ -120,7 +123,7 @@ public class ReadRss extends AsyncTask<Feed, Void, Void>{
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-        MyAdapter adapter = new MyAdapter(feed, context);
+        FeedItemAdapter adapter = new FeedItemAdapter(feed, context);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(adapter);
     }

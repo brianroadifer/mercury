@@ -1,4 +1,4 @@
-package com.brianroadifer.mercuryfeed;
+package com.brianroadifer.mercuryfeed.Activities;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

@@ -10,4 +10,5 @@
     <color name="secondaryTextColor">#222222</color>
     <color name="primaryTextColorInverse">#FFF</color>
     <color name="secondaryTextColorInverse">#ddd</color>
+    <color name="whiteAlpha">#4fff</color>
 </resources>

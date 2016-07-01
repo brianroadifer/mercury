@@ -1,9 +1,8 @@
-package com.brianroadifer.mercuryfeed;
+package com.brianroadifer.mercuryfeed.Models;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

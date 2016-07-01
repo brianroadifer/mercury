@@ -1,4 +1,4 @@
-package com.brianroadifer.mercuryfeed;
+package com.brianroadifer.mercuryfeed.Activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,6 +8,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
+import com.brianroadifer.mercuryfeed.R;
 import com.google.firebase.database.DatabaseException;
 
 public class AddFeedActivity extends AppCompatActivity {

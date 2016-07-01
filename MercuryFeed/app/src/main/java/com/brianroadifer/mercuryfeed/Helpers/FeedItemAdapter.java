@@ -1,4 +1,4 @@
-package com.brianroadifer.mercuryfeed;
+package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,11 +10,14 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.brianroadifer.mercuryfeed.Activities.ItemActivity;
+import com.brianroadifer.mercuryfeed.Models.Feed;
+import com.brianroadifer.mercuryfeed.Models.Item;
+import com.brianroadifer.mercuryfeed.R;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -22,11 +25,11 @@ import java.util.Locale;
 /**
  * Created by Brian Roadifer on 5/28/2016.
  */
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHolder> {
     Feed feed;
     Context context;
 
-    public MyAdapter(Feed feed, Context context) {
+    public FeedItemAdapter(Feed feed, Context context) {
         this.feed = feed;
         this.context = context;
     }
@@ -49,7 +52,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             format = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US);
             holder.Info.setText(feed.Title + " / by " +current.getAuthor()+ " / " + Difference(newDate));
         } catch (ParseException e) {
-            holder.Info.setText(feed.Title + " / "+ current.getPubDate());
+            holder.Info.setText(feed.Title + " / by "+ current.getAuthor()+" / "+ current.getPubDate());
+        }catch (NullPointerException ne){
+            holder.Info.setText(feed.Title + " / by " + current.getAuthor());
         }
         holder.Content.setText(current.getDescription());
         Picasso.with(context).load(current.getThumbnailUrl()).into(holder.Thumbnail);
