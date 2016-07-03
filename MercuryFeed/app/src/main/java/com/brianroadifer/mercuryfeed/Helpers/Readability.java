@@ -115,7 +115,7 @@ public class Readability {
         return collection;
     }
 
-    private Uri fixRelativeUris(Element articleContent){
+    private void fixRelativeUris(Element articleContent){
         ChangeLinks(articleContent);
         ChangeImages(articleContent);
 

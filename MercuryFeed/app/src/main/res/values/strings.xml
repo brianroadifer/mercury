@@ -160,4 +160,5 @@
     <string name="title_activity_search_results">SearchResultsActivity</string>
     <string name="title_activity_tag">Tags</string>
     <string name="title_activity_article_item">ArticleItemActivity</string>
+    <string name="title_activity_article">Articles</string>
 </resources>

@@ -2,6 +2,7 @@ package com.brianroadifer.mercuryfeed.Activities;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,15 +26,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.Helpers.ReadArticle;
+import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.R;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 public class ItemActivity extends AppCompatActivity {
     FloatingActionButton fab, fabBrowser, fabRead,fabSave;
@@ -103,7 +112,6 @@ public class ItemActivity extends AppCompatActivity {
         fabRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Snackbar.make(v, "Reading Mode Non Functional", Snackbar.LENGTH_SHORT).show();
                 Intent intent = new Intent(getApplicationContext(), ArticleItemActivity.class);
                 intent.putExtra("url", url);
                 startActivity(intent);
@@ -113,6 +121,18 @@ public class ItemActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Snackbar.make(v, "Offline Saving Non Functional", Snackbar.LENGTH_SHORT).show();
+                ReadArticle readArticle = new ReadArticle();
+                Article article = new Article();
+                try {
+                    article = readArticle.execute(url).get();
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+                ArticleHelper ah = new ArticleHelper(getApplicationContext());
+                ah.SaveArticle(article);
             }
         });
         ImageView imageView = (ImageView) findViewById(R.id.item_image);

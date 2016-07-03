@@ -1,5 +1,6 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -38,7 +39,7 @@ public class ReadRss extends AsyncTask<Feed, Void, Void>{
     public ReadRss(Context context, RecyclerView recyclerView){
         this.context = context;
         this.recyclerView = recyclerView;
-        progress = new ProgressDialog(context);
+        progress = new ProgressDialog(context, ProgressDialog.STYLE_HORIZONTAL);
         progress.setMessage("Loading Feed...");
     }
     @Override
@@ -118,11 +119,14 @@ public class ReadRss extends AsyncTask<Feed, Void, Void>{
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        progress.show();
     }
+
 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
+        progress.dismiss();
         FeedItemAdapter adapter = new FeedItemAdapter(feed, context);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(adapter);

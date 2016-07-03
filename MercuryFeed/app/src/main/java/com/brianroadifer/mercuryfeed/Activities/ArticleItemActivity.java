@@ -26,7 +26,20 @@ public class ArticleItemActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         Bundle bundle = getIntent().getExtras();
-        String url = bundle.getString("url");
+        String URL;
+        if(bundle.containsKey("Article")){
+            article = (Article) bundle.get("Article");
+        }else if(bundle.containsKey("url")){
+            URL = bundle.getString("url");
+            ReadArticle readArticle = new ReadArticle();
+            try {
+                article = readArticle.execute(URL).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -36,14 +49,7 @@ public class ArticleItemActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        ReadArticle readArticle = new ReadArticle();
-        try {
-            article = readArticle.execute(url).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+
 
         TextView title = (TextView) findViewById(R.id.article_title);
         TextView content = (TextView) findViewById(R.id.article_content);

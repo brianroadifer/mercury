@@ -67,6 +67,10 @@
         <activity
             android:name=".Activities.ArticleItemActivity"
             android:label="@string/title_activity_article_item"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".Activities.ArticleActivity"
+            android:label="@string/title_activity_article"
             android:theme="@style/AppTheme"></activity>
     </application>
 

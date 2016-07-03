@@ -13,7 +13,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
+import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.firebase.database.DataSnapshot;
@@ -31,6 +34,8 @@ import java.util.List;
 public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     DatabaseReference database;
     List<Feed> feeds = new ArrayList<>();
+    List<Article> articles = new ArrayList<>();
+    ArticleHelper articleHelper = new ArticleHelper(this);
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -72,6 +77,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             public void onCancelled(DatabaseError databaseError) {
                 Log.w("getFeeds:onCancelled", databaseError.toException());
             }
+
         });
     }
 
@@ -110,17 +116,25 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         Log.d("setmeup", id +"");
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if(id == R.id.nav_settings) {
-            startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
-        } else if(id == R.id.nav_add_feed){
-            startActivity(new Intent(this, AddFeedActivity.class));
-        } else if(id == R.id.nav_tags){
-            startActivity(new Intent(this, TagActivity.class));
-        }else{
-            finish();
-            startActivity(item.getIntent());
+        switch (id) {
+            case R.id.nav_settings:
+                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+                break;
+            case R.id.nav_add_feed:
+                startActivity(new Intent(this, AddFeedActivity.class));
+                break;
+            case R.id.nav_tags:
+                startActivity(new Intent(this, TagActivity.class));
+                break;
+            case R.id.nav_articles:
+                startActivity(new Intent(this, ArticleActivity.class));
+                break;
+            default:
+                if(item.getIntent() != null){
+                    startActivity(item.getIntent());
+                }else{
+                    Toast.makeText(this, "Action is not working", Toast.LENGTH_SHORT).show();
+                }
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

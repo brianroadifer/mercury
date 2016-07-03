@@ -13,6 +13,9 @@
             android:title="Add Feed"/>
     </group>
 
+    <item android:title="Aricles"
+        android:icon="@drawable/ic_bookmark_white_48dp"
+        android:id="@+id/nav_articles"/>
     <item android:title="Tags"
         android:icon="@drawable/ic_label_black_48dp"
         android:id="@+id/nav_tags"/>
