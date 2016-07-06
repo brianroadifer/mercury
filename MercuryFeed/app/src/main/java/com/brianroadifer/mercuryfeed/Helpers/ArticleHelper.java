@@ -36,9 +36,8 @@ public class ArticleHelper {
      * @param article Article that is saved to the device
      */
     public void SaveArticle(Article article){
-        UUID uuid = UUID.randomUUID();
         try {
-            this.fos = this.context.openFileOutput(FILENAME + UUID.randomUUID().toString(), Context.MODE_PRIVATE);
+            this.fos = this.context.openFileOutput(FILENAME + article.ID, Context.MODE_PRIVATE);
             this.os = new ObjectOutputStream(this.fos);
             this.os.writeObject(article);
             this.os.close();
@@ -61,7 +60,6 @@ public class ArticleHelper {
             this.fis = this.context.openFileInput(fileName);
             this.is = new ObjectInputStream(this.fis);
             Article article = (Article) this.is.readObject();
-            article.Tags = new ArrayList<>();
             this.is.close();
             this.fis.close();
             Log.w("Article:Load", article.Title + "was successfully loaded");

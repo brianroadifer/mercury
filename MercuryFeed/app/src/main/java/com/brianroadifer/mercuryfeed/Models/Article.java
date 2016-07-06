@@ -12,5 +12,7 @@ public class Article implements Serializable {
     public String Title;
     public String Content;
     public String MetaData;
-    public transient List<Tag> Tags;
+    public List<Tag> Tags;
+
+    public Article(){}
 }

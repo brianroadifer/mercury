@@ -17,7 +17,7 @@
             android:id="@+id/tag_view"
             app:rowMode="stretch"
             app:rowGravity="left"
-            app:selectionMode="true"
+            app:selectionMode="false"
             app:tagTextSize="20dp"
             app:tagBackground="@color/colorPrimary"
             app:tagForeground="@drawable/flat_button"

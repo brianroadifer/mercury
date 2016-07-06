@@ -10,4 +10,6 @@ public class Tag implements Serializable{
     public String ID;
     public String Name;
 
+    public Tag(){}
+
 }

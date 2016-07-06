@@ -45,7 +45,7 @@
         android:layout_below="@+id/article_tag_header"
         app:rowMode="wrap"
         app:rowGravity="left"
-        app:selectionMode="true"
+        app:selectionMode="false"
         app:tagBackground="@color/colorPrimary"
         app:tagForeground="@drawable/flat_button"
         app:tagPaddingBottom="@dimen/default_item_padding"

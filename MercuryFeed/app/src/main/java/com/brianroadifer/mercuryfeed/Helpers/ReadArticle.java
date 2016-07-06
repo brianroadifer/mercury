@@ -14,6 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 
@@ -63,6 +64,7 @@ public class ReadArticle extends AsyncTask<String, Void, Article> {
             for (Element li: lis) {
                 Log.d("JSwa", "LI [" + li.html()+"]");
             }
+            article.Tags = new ArrayList<>();
         }
     }
 

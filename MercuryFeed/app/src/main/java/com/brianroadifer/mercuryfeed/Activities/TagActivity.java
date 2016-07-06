@@ -5,9 +5,14 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.text.SpannableString;
+import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
+import android.widget.EditText;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
@@ -47,11 +52,7 @@ public class TagActivity extends BaseActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Tag tag = new Tag();
-                tag.ID = UUID.randomUUID().toString();
-                tag.Name = "TESTING";
-                tagHelper.SaveTag(tag);
-                recreate();
+                createDialog();
             }
         });
 
@@ -87,7 +88,6 @@ public class TagActivity extends BaseActivity {
                 for(Article article : ah.LoadArticles()){
                     for(Tag tag: article.Tags) {
                         if(tag.Name.equalsIgnoreCase(t.Name)){
-
                             intent.putExtra("article"+ (i++), article);
                         }
                     }
@@ -105,5 +105,38 @@ public class TagActivity extends BaseActivity {
         hashtagView.setTransformer(stateTransform);
         hashtagView.setData(tagList);
     }
+
+   private void createDialog(){
+       LayoutInflater factory = LayoutInflater.from(this);
+       final View tagDialogView = factory.inflate(R.layout.add_tag_dialog, null);
+       final AlertDialog tagDialog = new AlertDialog.Builder(this).create();
+       tagDialog.setView(tagDialogView);
+       tagDialogView.findViewById(R.id.tag_dialog_btn_yes).setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+               EditText edit = (EditText) tagDialogView.findViewById(R.id.tag_dialog_edit);
+               String tag = edit.getText().toString();
+               String[] tags = tag.split(",");
+               List<Tag> tagList = new ArrayList<>();
+               for(String t: tags){
+                   Tag temp = new Tag();
+                   temp.Name = t;
+                   temp.ID = UUID.randomUUID().toString();
+                   tagList.add(temp);
+               }
+               TagHelper tagHelper = new TagHelper(getApplicationContext());
+               tagHelper.SaveTags(tagList);
+               tagDialog.dismiss();
+           }
+       });
+       tagDialogView.findViewById(R.id.tag_dialog_btn_no).setOnClickListener(new View.OnClickListener(){
+           @Override
+           public void onClick(View v) {
+               tagDialog.dismiss();
+           }
+       });
+
+       tagDialog.show();
+   }
 }
 
