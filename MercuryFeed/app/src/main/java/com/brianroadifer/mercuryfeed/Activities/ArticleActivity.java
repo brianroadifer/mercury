@@ -29,7 +29,18 @@ public class ArticleActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         final ArticleHelper articleHelper = new ArticleHelper(getApplicationContext());
-        articles = articleHelper.LoadArticles();
+
+
+        Bundle bundle = getIntent().getExtras();
+        if(bundle != null){
+            for(int i = 0; i< bundle.size(); i++){
+                articles.add((Article) bundle.get("article"+ i));
+            }
+            setTitle((String) bundle.get("title"));
+        }else {
+            articles = articleHelper.LoadArticles();
+        }
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -40,6 +51,7 @@ public class ArticleActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         articleHelper.DeleteArticles();
                         Snackbar.make(v, "Articles Deleted", Snackbar.LENGTH_LONG).show();
+                        recreate();
                     }
                 }).show();
             }

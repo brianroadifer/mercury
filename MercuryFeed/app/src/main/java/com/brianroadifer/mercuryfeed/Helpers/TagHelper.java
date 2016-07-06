@@ -3,7 +3,7 @@ package com.brianroadifer.mercuryfeed.Helpers;
 import android.content.Context;
 import android.util.Log;
 
-import com.brianroadifer.mercuryfeed.Models.Article;
+import com.brianroadifer.mercuryfeed.Models.Tag;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,75 +18,75 @@ import java.util.UUID;
 /**
  * Created by Brian Roadifer on 7/3/2016.
  */
-public class ArticleHelper {
+public class TagHelper {
 
-    String FILENAME = "meurcury_article_";
+    public final static String FILENAME = "mercury_tags_";
     FileOutputStream fos;
     ObjectOutputStream os;
     FileInputStream fis;
     ObjectInputStream is;
     Context context;
 
-    public ArticleHelper(Context context){
+    public TagHelper(Context context){
         this.context = context;
     }
 
     /**
-     * Save a single article to read offline later
-     * @param article Article that is saved to the device
+     * Save a single tag to read offline later
+     * @param tag Article that is saved to the device
      */
-    public void SaveArticle(Article article){
-        UUID uuid = UUID.randomUUID();
+    public void SaveTag(Tag tag){
         try {
-            this.fos = this.context.openFileOutput(FILENAME + UUID.randomUUID().toString(), Context.MODE_PRIVATE);
+            this.fos = this.context.openFileOutput(FILENAME + tag.ID, Context.MODE_PRIVATE);
             this.os = new ObjectOutputStream(this.fos);
-            this.os.writeObject(article);
+            this.os.writeObject(tag);
             this.os.close();
             this.fos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.w("Article:Save", article.Title + " was saved successfully");
+        Log.d("Tag:Save", tag.Name + " was saved successfully");
     }
 
-    public void SaveArticles(List<Article> articles){
-        for(Article article: articles){
-            SaveArticle(article);
+    public void SaveTags(List<Tag> tags){
+        for(Tag tag: tags){
+            SaveTag(tag);
         }
     }
 
-    public Article LoadArticle(String fileName){
-        Log.w("Article:Load", "Loading " + fileName);
+    public Tag LoadTag(String fileName){
+        Log.d("Tag:Load", "Loading " + fileName);
         try{
             this.fis = this.context.openFileInput(fileName);
             this.is = new ObjectInputStream(this.fis);
-            Article article = (Article) this.is.readObject();
-            article.Tags = new ArrayList<>();
+            Tag tag = (Tag) this.is.readObject();
             this.is.close();
             this.fis.close();
-            Log.w("Article:Load", article.Title + "was successfully loaded");
-            return article;
+            Log.d("Tag:Load", tag.Name + "was successfully loaded");
+            return tag;
         }catch (IOException e){
+            Log.e("Tag:ERROR", e.toString());
             e.printStackTrace();
         }catch (ClassNotFoundException e){
+            Log.e("Tag:ERROR", e.toString());
             e.printStackTrace();
         }
         return null;
     }
 
-    public List<Article> LoadArticles(){
-        List<Article> articles = new ArrayList<>();
+    public List<Tag> LoadTags(){
+        List<Tag> tags = new ArrayList<>();
         File[] files = this.context.getFilesDir().listFiles();
         for (File file: files) {
             if (file.isFile() && file.getName().contains(FILENAME)){
-                Article article = LoadArticle(file.getName());
-                if(article != null){
-                    articles.add(article);
+                Tag tag = LoadTag(file.getName());
+                if(tag != null){
+                    tags.add(tag);
                 }
 
             }
         }
-        return  articles;
+        return  tags;
     }
 
     /**
@@ -94,22 +94,22 @@ public class ArticleHelper {
      * @param filename file that will be deleted
      * @return
      */
-    public boolean DeleteArticle(String filename){
-        Log.w("Article:Delete", filename + " was successfully deleted" );
+    public boolean DeleteTag(String filename){
+        Log.d("Tag:Delete", filename + " was successfully deleted" );
         return context.deleteFile(filename);
-
     }
+
+
 
     /**
      * Deletes all articles stored on the device
      *
      */
-    public void DeleteArticles(){
+    public void DeleteTags(){
         File[] files = context.getFilesDir().listFiles();
         for (File file: files) {
-            if(file.isFile()){
-                Log.w("Article:Delete", file.getName() + " was successfully deleted" );
-                context.deleteFile(file.getName());
+            if(file.isFile() && file.getName().contains(FILENAME)){
+                DeleteTag(file.getName());
             }
         }
 

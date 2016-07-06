@@ -41,22 +41,26 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final Article current = articles.get(position);
-        holder.Title.setText(current.Title);
-        holder.articleView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, ArticleItemActivity.class);
-                intent.putExtra("Article", current);
-                context.startActivity(intent);
-            }
-        });
-        holder.articleView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Toast.makeText(v.getContext(), "Press and hold to delete article", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
+        if(current != null){
+            holder.Title.setText(current.Title);
+            holder.articleView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, ArticleItemActivity.class);
+                    intent.putExtra("Article", current);
+                    context.startActivity(intent);
+                }
+            });
+            holder.articleView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Toast.makeText(v.getContext(), "Press and hold to delete article", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            });
+        }else{
+            holder.Title.setText("Articles Related Not Found");
+        }
     }
 
     @Override

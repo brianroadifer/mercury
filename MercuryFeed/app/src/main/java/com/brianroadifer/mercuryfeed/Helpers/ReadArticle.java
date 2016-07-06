@@ -14,6 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.util.UUID;
 
 
 /**
@@ -46,6 +47,7 @@ public class ReadArticle extends AsyncTask<String, Void, Article> {
         if(data != null){
             Element body = data.body();
             Log.d("JSwa", "Title [" + data.title()+"]");
+            article.ID = UUID.randomUUID().toString();
             article.Title = data.title();
             Elements articles = body.getElementsByTag("article");
             for (Element article: articles) {

@@ -1,12 +1,10 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -16,7 +14,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
-import com.brianroadifer.mercuryfeed.Models.Article;
+import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.firebase.database.DataSnapshot;
@@ -34,8 +32,9 @@ import java.util.List;
 public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     DatabaseReference database;
     List<Feed> feeds = new ArrayList<>();
-    List<Article> articles = new ArrayList<>();
     ArticleHelper articleHelper = new ArticleHelper(this);
+    TagHelper tagHelper = new TagHelper(this);
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
