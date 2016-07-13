@@ -26,7 +26,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 /**
  * Created by Brian Roadifer on 5/28/2016.
  */
-public class ReadRss extends AsyncTask<Feed, Void, Void>{
+public class ReadRss extends AsyncTask<Feed, Void, Feed>{
     Context context;
     Feed feed;
     ProgressDialog progress;
@@ -39,14 +39,14 @@ public class ReadRss extends AsyncTask<Feed, Void, Void>{
     public ReadRss(Context context, RecyclerView recyclerView){
         this.context = context;
         this.recyclerView = recyclerView;
-        progress = new ProgressDialog(context, ProgressDialog.STYLE_HORIZONTAL);
+        progress = new ProgressDialog(context, ProgressDialog.STYLE_SPINNER);
         progress.setMessage("Loading Feed...");
     }
     @Override
-    protected Void doInBackground(Feed... params) {
+    protected Feed doInBackground(Feed... params) {
         feed = params[0];
         ProcessXml(GetData(params[0].FeedUrl));
-        return null;
+        return feed;
     }
 
     public void ProcessXml(Document data) {
@@ -124,12 +124,9 @@ public class ReadRss extends AsyncTask<Feed, Void, Void>{
 
 
     @Override
-    protected void onPostExecute(Void aVoid) {
+    protected void onPostExecute(Feed aVoid) {
         super.onPostExecute(aVoid);
         progress.dismiss();
-        FeedItemAdapter adapter = new FeedItemAdapter(feed, context);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(adapter);
     }
 
     public Document GetData(String rssUrl){

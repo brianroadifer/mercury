@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -58,8 +59,10 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
                     return false;
                 }
             });
-        }else{
+        }else if(current == null && articles.size() == 1){
             holder.Title.setText("Articles Related Not Found");
+        }else{
+            holder.Title.setText("");
         }
     }
 

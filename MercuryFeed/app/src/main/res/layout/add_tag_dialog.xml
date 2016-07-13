@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="@dimen/abc_dialog_padding_material">
 
-    <EditText
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Add Tag(s)"
+        android:id="@+id/textView2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Tags are seperated by a (,)"
+        android:id="@+id/textView3" />
+
+    <MultiAutoCompleteTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -13,19 +28,25 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Button"
+            android:gravity="center"
+            android:text="Cancel"
             android:id="@+id/tag_dialog_btn_no"
             android:layout_gravity="right"
-            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:background="@color/design_textinput_error_color_dark" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Button"
+            android:gravity="center"
+            android:text="Add"
             android:id="@+id/tag_dialog_btn_yes"
             style="@style/Base.Widget.AppCompat.Button.Borderless"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_toStartOf="@+id/tag_dialog_btn_no"
+            android:background="@color/accent_material_dark" />
     </RelativeLayout>
 
 

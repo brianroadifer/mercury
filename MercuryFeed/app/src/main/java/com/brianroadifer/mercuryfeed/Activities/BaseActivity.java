@@ -25,13 +25,14 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by Brian Roadifer on 6/28/2016.
  */
 public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     DatabaseReference database;
-    List<Feed> feeds = new ArrayList<>();
+    public List<Feed> feeds = new ArrayList<>();
     ArticleHelper articleHelper = new ArticleHelper(this);
     TagHelper tagHelper = new TagHelper(this);
 
@@ -40,44 +41,55 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        database = FirebaseDatabase.getInstance().getReference().child("feeds");
-        database.addListenerForSingleValueEvent(new ValueEventListener() {
+        Thread load = new Thread(new Runnable() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
-                for(DataSnapshot snap: snapshots){
-                    String url = "";
-                    String title = "";
-                    for(DataSnapshot child : snap.getChildren()){
-                        if(child.getKey().equals("title")){
-                            title = child.getValue(String.class);
+            public void run() {
+                database = FirebaseDatabase.getInstance().getReference().child("feeds");
+                database.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
+                        for(DataSnapshot snap: snapshots){
+                            String url = "";
+                            String title = "";
+                            for(DataSnapshot child : snap.getChildren()){
+                                if(child.getKey().equals("title")){
+                                    title = child.getValue(String.class);
+                                }
+                                if(child.getKey().equals("feedUrl")){
+                                    url = child.getValue(String.class);
+                                }
+                            }
+                            feeds.add(new Feed(url, title));
                         }
-                        if(child.getKey().equals("feedUrl")){
-                            url = child.getValue(String.class);
+                        Log.d("onDataChange", "Value: " + feeds);
+                        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                        navigationView.setNavigationItemSelectedListener(BaseActivity.this);
+                        Menu menu = navigationView.getMenu();
+                        for(final Feed fd : feeds){
+                            Log.d("onDataChange", "Title: " + fd.toMap().toString());
+                            final MenuItem item = menu.add(R.id.nav_feed_group, Menu.NONE, Menu.FLAG_APPEND_TO_GROUP, fd.Title);
+                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                            intent.putExtra("URL", fd.FeedUrl);
+                            intent.putExtra("Title", fd.Title);
+                            item.setIntent(intent);
                         }
                     }
-                    feeds.add(new Feed(url, title));
-                }
-                Log.d("onDataChange", "Value: " + feeds);
-                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-                navigationView.setNavigationItemSelectedListener(BaseActivity.this);
-                Menu menu = navigationView.getMenu();
-                for(final Feed fd : feeds){
-                    Log.d("onDataChange", "Title: " + fd.toMap().toString());
-                    final MenuItem item = menu.add(R.id.nav_feed_group, Menu.NONE, Menu.FLAG_APPEND_TO_GROUP, fd.Title);
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    intent.putExtra("URL", fd.FeedUrl);
-                    intent.putExtra("Title", fd.Title);
-                    item.setIntent(intent);
-                }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w("getFeeds:onCancelled", databaseError.toException());
-            }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w("getFeeds:onCancelled", databaseError.toException());
+                    }
 
+                });
+            }
         });
+        load.start();
+        try {
+            load.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -116,6 +128,9 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
         Log.d("setmeup", id +"");
         switch (id) {
+            case R.id.nav_all:
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                break;
             case R.id.nav_settings:
                 startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
                 break;

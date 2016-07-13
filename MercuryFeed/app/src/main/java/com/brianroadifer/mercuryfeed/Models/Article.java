@@ -11,7 +11,10 @@ public class Article implements Serializable {
     public String ID;
     public String Title;
     public String Content;
-    public String MetaData;
+    public String URL;
+    public String ByLine;
+    public String Dir;
+    public String Excerpt;
     public List<Tag> Tags;
 
     public Article(){}

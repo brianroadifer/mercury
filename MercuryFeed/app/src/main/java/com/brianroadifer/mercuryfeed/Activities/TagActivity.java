@@ -12,7 +12,9 @@ import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.MultiAutoCompleteTextView;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
@@ -22,7 +24,11 @@ import com.brianroadifer.mercuryfeed.R;
 import com.greenfrvr.hashtagview.HashtagView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class TagActivity extends BaseActivity {
@@ -33,20 +39,22 @@ public class TagActivity extends BaseActivity {
         setContentView(R.layout.activity_tag);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Map<String, Tag> unq = new HashMap<>();
 
         HashtagView hashtagView = (HashtagView) findViewById(R.id.tag_view);
         List<Article> articles = articleHelper.LoadArticles();
-        final List<Tag> tagList = new ArrayList<>();
         for (Article article : articles) {
             if(article.Tags != null) {
                 for (Tag tag : article.Tags) {
-                    tagList.add(tag);
+                    unq.put(tag.Name.toLowerCase(), tag);
                 }
             }
         }
         for(Tag tag : tagHelper.LoadTags()){
-            tagList.add(tag);
+            unq.put(tag.Name.toLowerCase(), tag);
         }
+
+        tagList.addAll(unq.values());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -110,13 +118,18 @@ public class TagActivity extends BaseActivity {
        LayoutInflater factory = LayoutInflater.from(this);
        final View tagDialogView = factory.inflate(R.layout.add_tag_dialog, null);
        final AlertDialog tagDialog = new AlertDialog.Builder(this).create();
+       final MultiAutoCompleteTextView edit = (MultiAutoCompleteTextView) tagDialogView.findViewById(R.id.tag_dialog_edit);
+       ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.tag_suggestion, getTagArray(tagList));
+       edit.setAdapter(adapter);
+       edit.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+       edit.setThreshold(1);
+
        tagDialog.setView(tagDialogView);
        tagDialogView.findViewById(R.id.tag_dialog_btn_yes).setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View v) {
-               EditText edit = (EditText) tagDialogView.findViewById(R.id.tag_dialog_edit);
                String tag = edit.getText().toString();
-               String[] tags = tag.split(",");
+               String[] tags = tag.replaceAll("^[,\\s]+", "").split("[,\\s]+");
                List<Tag> tagList = new ArrayList<>();
                for(String t: tags){
                    Tag temp = new Tag();
@@ -138,5 +151,16 @@ public class TagActivity extends BaseActivity {
 
        tagDialog.show();
    }
+    private String[] getTagArray(List<Tag> tags){
+        List<String> names = new ArrayList<>();
+        for(Tag tag : tags){
+            names.add(tag.Name);
+        }
+        String[] tagNames = new String[names.size()];
+        for(int i = 0; i < names.size(); i++){
+            tagNames[i] = names.get(i);
+        }
+        return tagNames;
+    }
 }
 

@@ -23,11 +23,11 @@ import com.squareup.leakcanary.LeakCanary;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends BaseActivity {
     final private String TAG = "FeedDbEvent";
     private Feed feed = new Feed();
-    private List<Feed> feeds = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +37,6 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        feeds = getFeeds();
         Bundle bundle = getIntent().getExtras();
         if(bundle != null){
             String url = bundle.getString("URL");
@@ -46,14 +45,7 @@ public class MainActivity extends BaseActivity {
             feed = new Feed(url, title);
         }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        assert fab != null;
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Feature not complete", Snackbar.LENGTH_SHORT).show();
-            }
-        });
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -64,30 +56,37 @@ public class MainActivity extends BaseActivity {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         ReadRss readRss = new ReadRss(this, recyclerView);
         if(bundle == null){
-            AllFeed(recyclerView, readRss);
+            feed = AllFeed(readRss);
         }else{
-            readRss.execute(feed);
+            try {
+                feed = readRss.execute(feed).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
-
+        FeedItemAdapter feedItemAdapter = new FeedItemAdapter(feed, this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(feedItemAdapter);
         LeakCanary.install(application);
     }
 
 
-    public void AllFeed(RecyclerView recyclerView, ReadRss readRss){
+    public Feed AllFeed(ReadRss readRss){
         Feed allFeed = new Feed();
         allFeed.Title = "All";
         for(Feed fed : feeds){
-            Log.w("ALLFEED", fed.Title);
-            readRss.ProcessXml(readRss.GetData(fed.FeedUrl));
-            for(Item item : readRss.feedItems){
-                allFeed.Items.add(item);
-                Log.w("ALLFEED", item.getTitle());
+            try {
+                allFeed.Items.addAll(readRss.execute(fed).get().Items);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
         }
-        FeedItemAdapter adapter = new FeedItemAdapter(allFeed, getApplicationContext());
-        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        recyclerView.setAdapter(adapter);
-
         Log.w("ALLFEED", "all");
+        return allFeed;
     }
 }

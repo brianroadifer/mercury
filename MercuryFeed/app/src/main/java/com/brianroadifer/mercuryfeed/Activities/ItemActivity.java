@@ -100,20 +100,25 @@ public class ItemActivity extends AppCompatActivity {
                 CustomTabsIntent customTabsIntent = builder.build();
                 customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(Intent.URI_ANDROID_APP_SCHEME + "//" + activity.getPackageName()));
                 customTabsIntent.launchUrl(activity, Uri.parse(url));
+                hideFab();
+                status = false;
             }
         });
+        fabRead.setImageResource(R.drawable.ic_chrome_reader_mode_white_48dp);
         fabRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), ArticleItemActivity.class);
                 intent.putExtra("url", url);
                 startActivity(intent);
+                hideFab();
+                status = false;
             }
         });
         fabSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Snackbar.make(v, "Offline Saving Non Functional", Snackbar.LENGTH_SHORT).show();
+                fabSave.setImageResource(R.drawable.ic_bookmark_white_48dp);
                 ReadArticle readArticle = new ReadArticle();
                 Article article = new Article();
                 try {
@@ -126,6 +131,8 @@ public class ItemActivity extends AppCompatActivity {
                 }
                 ArticleHelper ah = new ArticleHelper(getApplicationContext());
                 ah.SaveArticle(article);
+                hideFab();
+                status = false;
             }
         });
         ImageView imageView = (ImageView) findViewById(R.id.item_image);
@@ -167,25 +174,6 @@ public class ItemActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.navigation, menu);
         return true;
     }
-
-    public String formatDate(String date){
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z", Locale.US);
-        Date newDate;
-        try {
-            newDate = format.parse(date);
-            format = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US);
-            return  format.format(newDate);
-        } catch (ParseException e) {
-            return date;
-        }catch (NullPointerException ne){
-            return "";
-        }
-    }
-
-    private String htmlSetup(String content){
-        return "<html><body>"+ content + "</body></html>";
-    }
-
     private void showFab() {
 
         //Floating Action Button 1
@@ -237,4 +225,23 @@ public class ItemActivity extends AppCompatActivity {
         fabSave.startAnimation(hide_fab_save);
         fabSave.setClickable(false);
     }
+
+    public String formatDate(String date){
+        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z", Locale.US);
+        Date newDate;
+        try {
+            newDate = format.parse(date);
+            format = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US);
+            return  format.format(newDate);
+        } catch (ParseException e) {
+            return date;
+        }catch (NullPointerException ne){
+            return "";
+        }
+    }
+
+    private String htmlSetup(String content){
+        return "<html><body>"+ content + "</body></html>";
+    }
+
 }

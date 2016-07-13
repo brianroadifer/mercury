@@ -20,7 +20,7 @@ import java.util.UUID;
  */
 public class ArticleHelper {
 
-    String FILENAME = "meurcury_article_";
+    public final static String FILENAME = "meurcury_article_";
     FileOutputStream fos;
     ObjectOutputStream os;
     FileInputStream fis;
