@@ -1,9 +1,5 @@
 package com.brianroadifer.mercuryfeed.Models;
 
-import org.xmlpull.v1.XmlPullParser;
-
-import java.util.ArrayList;
-
 /**
  * Created by Brian Roadifer on 5/28/2016.
  */

@@ -25,7 +25,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Created by Brian Roadifer on 6/28/2016.
@@ -39,6 +38,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Thread load = new Thread(new Runnable() {
@@ -68,7 +68,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                         Menu menu = navigationView.getMenu();
                         for(final Feed fd : feeds){
                             Log.d("onDataChange", "Title: " + fd.toMap().toString());
-                            final MenuItem item = menu.add(R.id.nav_feed_group, Menu.NONE, Menu.FLAG_APPEND_TO_GROUP, fd.Title);
+                            final MenuItem item = menu.add(R.id.nav_feed_group, Menu.FIRST, Menu.FLAG_APPEND_TO_GROUP, fd.Title);
                             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                             intent.putExtra("URL", fd.FeedUrl);
                             intent.putExtra("Title", fd.Title);

@@ -13,6 +13,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service android:name=".Services.DatabaseService"
+            android:exported="false"/>
         <activity
             android:name=".Activities.MainActivity"
             android:label="@string/app_name"
@@ -27,7 +29,6 @@
                 android:name="android.app.default_searchable"
                 android:value=".SearchResultsActivity" />
         </activity>
-        <activity android:name=".ArticleWeb" />
         <activity
             android:name=".Activities.ItemActivity"
             android:label="@string/title_activity_feed"

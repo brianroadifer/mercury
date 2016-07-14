@@ -15,6 +15,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".Activities.ArticleItemActivity"
     tools:showIn="@layout/activity_article_item">
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,15 +29,22 @@
         android:id="@+id/article_content"
         android:layout_below="@+id/article_title"/>
 
+    <WebView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/article_content"
+        android:id="@+id/article_content_html"/>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/article_tag_header"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/title_activity_tag"
-        android:layout_below="@+id/article_content"
+        android:layout_below="@+id/article_content_html"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp" />
+
 
     <com.greenfrvr.hashtagview.HashtagView
         android:layout_width="match_parent"

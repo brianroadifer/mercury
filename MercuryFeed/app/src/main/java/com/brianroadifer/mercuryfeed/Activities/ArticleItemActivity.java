@@ -3,14 +3,11 @@ package com.brianroadifer.mercuryfeed.Activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.view.LayoutInflater;
@@ -20,7 +17,6 @@ import android.view.animation.AnimationUtils;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
@@ -139,15 +135,15 @@ public class ArticleItemActivity extends AppCompatActivity {
 
         TextView title = (TextView) findViewById(R.id.article_title);
         TextView content = (TextView) findViewById(R.id.article_content);
-//        WebView webView = (WebView) findViewById(R.id.article_content_html);
-//        webView.setWebViewClient(new WebViewClient(){
-//            @Override
-//            public boolean shouldOverrideUrlLoading(WebView view, String url){
-//                return false;
-//            }
-//        });
-//        webView.getSettings().setJavaScriptEnabled(true);
-//        webView.loadData(article.Content, "text/html", "utf-8");
+        WebView webView = (WebView) findViewById(R.id.article_content_html);
+        webView.setWebViewClient(new WebViewClient(){
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url){
+                return false;
+            }
+        });
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.loadData(article.Content, "text/html", "utf-8");
         title.setText(article.Title);
         content.setText(article.Content);
         final HashtagView tags = (HashtagView) findViewById(R.id.article_tag_view);

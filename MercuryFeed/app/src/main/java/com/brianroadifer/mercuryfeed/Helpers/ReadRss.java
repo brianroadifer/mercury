@@ -1,10 +1,8 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.brianroadifer.mercuryfeed.Models.Feed;

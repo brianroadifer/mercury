@@ -1,95 +1,32 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
-import android.text.TextUtils;
-
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Metadata;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Created by Brian Roadifer on 6/29/2016.
  */
-enum REGEX {
-    unlikelyCandidates("/banner|combx|comment|community|disqus|extra|foot|header|menu|modal|related|remark|rss|share|shoutbox|sidebar|skyscraper|sponsor|ad-break|agegate|pagination|pager|popup/i"),
-    okMaybeItsACandidate("/and|article|body|column|main|shadow/i"),
-    positive("/article|body|content|entry|hentry|main|page|pagination|post|text|blog|story/i"),
-    negative("/hidden|^hid$| hid$| hid |^hid |banner|combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|modal|outbrain|promo|related|scroll|share|shoutbox|sidebar|skyscraper|sponsor|shopping|tags|tool|widget/i"),
-    extraneous("/print|archive|comment|discuss|e[\\-]?mail|share|reply|all|login|sign|single|utility/i"),
-    byline("/byline|author|dateline|writtenby/i"),
-    replaceFonts("/<(\\/?)font[^>]*>/gi"),
-    normalize("/\\s{2,}/g"),
-    videos("/\\/\\/(www\\.)?(dailymotion|youtube|youtube-nocookie|player\\.vimeo)\\.com/i"),
-    nextLink("/(next|weiter|continue|>([^\\|]|$)|»([^\\|]|$))/i"),
-    prevLink("/(prev|earl|old|new|<|«)/i"),
-    whitespace("/^\\s*$/"),
-    hasContent("/\\S$/");
 
-    private final String pattern;
-
-    private REGEX(String p){
-        pattern = p;
-    }
-    public boolean equalsName(String otherpattern){
-        return (otherpattern == null) ? false : pattern.equalsIgnoreCase(otherpattern);
-    }
-    public String toString(){
-        return this.pattern;
-    }
-}
 
 public class Readability {
-
-    final int FLAG_STRIP_UNLIKELYS = 0x1;
-    final int FLAG_WEIGHT_CLASSES = 0x2;
-    final int FLAG_CLEAN_CONDITIONALLY = 0x4;
-
-    final int DEFAULT_MAX_ELEMS_TO_PARSE = 0;
-    final int DEFAULT_N_TOP_CANDIDATES = 0;
-    final int DEFAULT_MAX_PAGES = 0;
-    final String DEFAULT_TAGS_TO_SCORE = "section,h2,h3,h4,h5,h6,p,td,pre";
-    final String DIV_TO_P_ELEMS = "a,blockquote,dl,div,img,ol,p,table,ul,select";
-    final String ALTER_TO_DIV_EXCEPTIONS = "div,article,section,p";
-
-    URI uri;
+    private static final String CONTENT_SCORE = "readabilityContentScore";
     private final Document document;
     private String cache;
-    JSONObject options = new JSONObject();
-    Boolean biggestFrame = false;
-    String articleByLine = null;
-    String articleDir = null;
-    boolean debug;
-    int maxElemsToParse;
-    int nbTopCandidates;
-    int maxPages;
-    int flags;
-    List<Article> parsedPages = new ArrayList<>();
-    List<Object> pageETags = new ArrayList<>();
-    int curPageNum = 1;
-    String logEl = "";
+    private String byline;
 
-    public Readability(URI uri, Document document) {
-        this.uri = uri;
+    public Readability(Document document) {
         this.document = document;
-        this.maxElemsToParse = this.DEFAULT_MAX_ELEMS_TO_PARSE;
-        this.nbTopCandidates =  this.DEFAULT_N_TOP_CANDIDATES;
-        this.maxPages = this.DEFAULT_MAX_PAGES;
-        this.flags = this.FLAG_STRIP_UNLIKELYS | this.FLAG_WEIGHT_CLASSES | this.FLAG_CLEAN_CONDITIONALLY;
     }
     private Metadata getArticleMetadata(){
         Metadata metadata = new Metadata();
@@ -140,23 +77,26 @@ public class Readability {
 
         return metadata;
     }
-    private void removeScripts(Element element){
-        element.getElementsByTag("script").remove();
-        element.getElementsByTag("noscript").remove();
-
+    public final String html(){
+        return document.html();
     }
-    private float readablitiy(Element node){
-        float readability = 0;
+    public final String outerHtml(){
+        return document.outerHtml();
+    }
+    private static void placeContentScore(Element node){
+        node.attr(CONTENT_SCORE, Integer.toString(0));
+
+        int readability = 0;
 
         switch(node.tagName().toUpperCase()) {
             case "DIV":
-                readability += 5;
+                incrementContentScore(node, 5);
                 break;
 
             case "PRE":
             case "TD":
             case "BLOCKQUOTE":
-                readability += 3;
+                incrementContentScore(node, 3);
                 break;
 
             case "ADDRESS":
@@ -167,7 +107,7 @@ public class Readability {
             case "DT":
             case "LI":
             case "FORM":
-                readability -= 3;
+                incrementContentScore(node, -3);
                 break;
 
             case "H1":
@@ -177,153 +117,60 @@ public class Readability {
             case "H5":
             case "H6":
             case "TH":
-                readability -= 5;
+                incrementContentScore(node, -5);
                 break;
         }
-
-        readability += getClassWeight(node);
-        return readability;
+        incrementContentScore(node, getClassWeight(node));
     }
-    private float getClassWeight(Element node){
-        float weight = 0;
-        if(!flagIsActive(FLAG_WEIGHT_CLASSES)){
-            return weight;
-        }
+    private static int getClassWeight(Element node){
+        int weight = 0;
         if(node.className() != null && !node.className().isEmpty()){
-            if(Pattern.matches(REGEX.negative.toString(), node.className())){
+            Matcher negM = Patterns.get(Patterns.RegEx.NEGATIVE).matcher(node.className());
+            Matcher posM = Patterns.get(Patterns.RegEx.POSITIVE).matcher(node.className());
+            if(negM.find()){
                 weight -= 25;
             }
-            if(Pattern.matches(REGEX.positive.toString(), node.className())){
+            if(posM.find()){
                 weight += 25;
             }
         }
         if(node.id() != null && !node.id().isEmpty()){
-            if(Pattern.matches(REGEX.negative.toString(), node.id())){
+            Matcher negM = Patterns.get(Patterns.RegEx.NEGATIVE).matcher(node.id());
+            Matcher posM = Patterns.get(Patterns.RegEx.POSITIVE).matcher(node.id());
+            if(negM.find()){
                 weight -= 25;
             }
-            if(Pattern.matches(REGEX.positive.toString(), node.id())){
+            if(posM.find()){
                 weight += 25;
             }
         }
         return weight;
     }
-    private boolean flagIsActive(int flag) {
-        return (this.flags & flag) > 0;
-    }
-    private void addFlag(int flag) {
-        this.flags = this.flags | flag;
-    }
-    private void removeFlag(int flag) {
-        this.flags = this.flags & ~flag;
-    }
-    private Element removeAndGetNext(Element node){
-        Element nextNode = getNextNode(node, true);
-        node.remove();
-        return nextNode;
-    }
-    private Element getNextNode(Element node, boolean ingnoreSelfAndKids){
-        if(!ingnoreSelfAndKids && node.children().first() != null){
-            return node.children().first();
-        }
-        if(node.nextElementSibling() != null){
-            return node.nextElementSibling();
-        }
-        do{
-            node = node.parent();
-        }while(node != null && node.nextElementSibling() != null);
-        if(node != null){
-            return node;
-        }else if(node.nextElementSibling() != null){
-            return node.nextElementSibling();
-        }else{
-            return null;
-        }
-    }
-    private Element nextSibling(Element node){
-        do{
-            node = node.nextElementSibling();
-        }while (node != null && node.nextElementSibling() != null);
-        if(node != null){
-            return node;
-        }else if(node.nextElementSibling() != null){
-            return node.nextElementSibling();
-        }else{
-            return null;
-        }
-    }
-    private Element getNextNodeNoElementProperties(Element node, boolean ignoreSelfAndKids){
-        if(!ignoreSelfAndKids && node.children().get(0)!=null ){
-            return node.children().get(0);
-        }
-        Element next = nextSibling(node);
-        if(next != null){
-            return next;
-        }
-        do{
-            node = node.parent();
-            if(node != null){
-                next = nextSibling(node);
-            }
-        }while (node != null && next == null);
-        if(node != null){
-            return node;
-        }else {
-            return null;
-        }
-    }
-    public void prepDocument(){
+    protected void prepDocument(){
         if(document.body() == null){
             document.body().appendElement("body");
         }
+        document.getElementsByTag("script").remove();
+        document.getElementsByTag("noscript").remove();
         document.getElementsByTag("style").remove();
-        replaceBrs(document.body());
+        destroyBreaks(document.body());
         document.getElementsByTag("font").tagName("span");
     }
-    private Element nextElement(Element node){
-        Element next = node;
-        while (next != null && Pattern.matches(REGEX.whitespace.toString(), next.text())){
-            next = next.nextElementSibling();
-        }
-        return next;
+    public static void destroyBreaks(Element element){
+        element.html(element.html().replaceAll(Patterns.REGEX_KILL_BREAKS, "<br />"));
     }
-    public void replaceBrs(Element element){
-        for (Element br: element.getElementsByTag("br")) {
-            Element next = br.nextElementSibling();
-            boolean replaced = false;
-            while (next != null && next.equals(nextElement(next)) && (next.tagName().equalsIgnoreCase("BR"))){
-                replaced = true;
-                Element brSibling = next.nextElementSibling();
-                next.remove();
-                next = brSibling;
-            }
-            if(replaced){
-                Element p = this.document.createElement("p");
-                br.replaceWith(p);
-                next = p.nextElementSibling();
-                while (next!= null){
-                    if(next.tagName().equalsIgnoreCase("BR")){
-                        Element nextElem = nextElement(next);
-                        if(nextElem != null && nextElem.tagName().equalsIgnoreCase("BR")){
-                            break;
-                        }
-                    }
-                    Element sibling = next.nextElementSibling();
-                    p.appendChild(next);
-                    next = sibling;
-                }
-            }
-        }
-    }
-    private String getInnerText(Element element, boolean normalizeSpaces){
+    private static String getInnerText(Element element, boolean normalizeSpaces){
         String textContent = element.text().trim();
         if(normalizeSpaces){
-            return textContent.replace(REGEX.normalize.toString()," ");
-        }else {
-            return textContent;
+            return textContent.replaceAll(Patterns.REGEX_NORMALIZE,"");
         }
+        return textContent;
     }
-    private int getCharCount(Element element, String split){
-        return getInnerText(element,true).split(split).length -1;
+    private static int getCharCount(Element element, String split){
+        if(split == null || split.length() == 0){
+            split = ",";
+        }
+        return getInnerText(element,true).split(split).length;
     }
     private String getArticleTitle(){
         Document document = this.document;
@@ -364,476 +211,401 @@ public class Readability {
         }
         return curTitle;
     }
-    private void postProcessContent(Element articleContent){
-        fixRelativeUris(articleContent);
-    }
-    private void fixRelativeUris(Element articleContent){
-        for (Element anchor: articleContent.getElementsByTag("a")) {
-            String href = anchor.attr("href");
-            if(href != null){
-                if(href.indexOf("javascript:") == 0){
-                    anchor.replaceWith(document.createElement("p").text(anchor.text()));
-                }else {
-                    anchor.attr("href", toAbsoluteUri(href));
-                }
+    private static void clean(Element element, String tag){
+        Elements targets = getElementsByTag(element, tag);
+        boolean isEmbed = "object".equalsIgnoreCase(tag)|| "embed".equalsIgnoreCase(tag)|| "iframe".equalsIgnoreCase(tag);
+        for(Element tar : targets){
+            Matcher matcher = Patterns.get(Patterns.RegEx.VIDEO).matcher(tar.outerHtml());
+            if(isEmbed && matcher.find()){
+                continue;
             }
-        }
-        for (Element img: articleContent.getElementsByTag("img")){
-            String src = img.attr("src");
-            if(src != null){
-                img.attr("src", toAbsoluteUri(src));
-            }
-        }
-
-    }
-    private String toAbsoluteUri(String uri){
-        return this.uri.resolve(uri).toString();
-    }
-    private void clean(Element element, String tag){
-        boolean isEmbed = "object,embed,iframe".contains(tag);
-        for(Element embed : element.getElementsByTag(tag)){
-            if(isEmbed){
-                String attritbutes = TextUtils.join("|",embed.attributes().dataset().values());
-                if (Pattern.matches(REGEX.videos.toString(), attritbutes)) {
-                    break;
-                }
-                if(Pattern.matches(REGEX.videos.toString(), element.html())){
-                    break;
-                }
-            }
-            embed.remove();
+            tar.remove();
         }
     }
     private void cleanConditionally(Element element, String tag){
-        if(flagIsActive(FLAG_CLEAN_CONDITIONALLY)){
-            Elements tagList = element.getElementsByTag(tag);
+            Elements tagList = getElementsByTag(element, tag);
             int curTagsLength = tagList.size();
-            boolean isList = tag.equalsIgnoreCase("ul") || tag.equalsIgnoreCase("ol");
 
-            for (int i = curTagsLength -1; i >= 0; i -= 1){
-                Element curTag = tagList.get(i);
-                float weight = getClassWeight(curTag);
-                int contentScore = 0;
-
-                if(weight + contentScore < 0){
-                    curTag.remove();
-                }else if(getCharCount(curTag, ",") < 10){
-                    int p = curTag.getElementsByTag("p").size();
-                    int img = curTag.getElementsByTag("img").size();
-                    int li = curTag.getElementsByTag("li").size();
-                    int input = curTag.getElementsByTag("input").size();
+            for (Element node: tagList){
+                debug("Cleaning Conditionally (" + node.className() + ":" + node.id() + ")" + getContentScore(node));
+                int weight = getClassWeight(node);
+                if(weight < 0){
+                    node.remove();
+                }else if(getCharCount(node, ",") < 10){
+                    int p = node.getElementsByTag("p").size();
+                    int img = node.getElementsByTag("img").size();
+                    int li = node.getElementsByTag("li").size();
+                    int input = node.getElementsByTag("input").size();
 
                     int embedCount = 0;
-                    Elements embeds = curTag.getElementsByTag("embed");
-                    for(int ei = 0, il = embeds.size(); ei<il;ei += 1){
-                        if(!Pattern.matches(REGEX.videos.toString(), embeds.get(ei).attr("src"))){
+                    Elements embeds = getElementsByTag(node,"embed");
+                    for(Element embed:embeds){
+                        if(!Patterns.get(Patterns.RegEx.VIDEO).matcher(embed.absUrl("src")).find()){
                             embedCount += 1;
                         }
                     }
 
-                    float linkDensity = getLinkDensity(curTag);
-                    int contentLength = getInnerText(curTag, true).length();
+                    float linkDensity = getLinkDensity(node);
+                    int contentLength = getInnerText(node, true).length();
                     boolean toRemove = false;
-                    if(img > p && !hasAncestorTag(curTag, "figure", 3)){
+                    if(img > p){
                         toRemove = true;
-                    } else  if (!isList && li > p){
+                    } else  if (li > p && !"ul".equalsIgnoreCase(tag) && !"ol".equalsIgnoreCase(tag)){
                         toRemove = true;
                     } else if(input > Math.floor(p/3)){
                         toRemove = true;
-                    }else if (!isList && contentLength < 25 && (img == 0 || img > 2)) {
+                    }else if (contentLength < 25 && (img == 0 || img > 2)) {
                         toRemove = true;
-                    } else if (!isList && weight < 25 && linkDensity > 0.2) {
+                    } else if (weight < 25 && linkDensity > 0.2f) {
                         toRemove = true;
-                    } else if (weight >= 25 && linkDensity > 0.5) {
+                    } else if (weight >= 25 && linkDensity > 0.5f) {
                         toRemove = true;
                     } else if ((embedCount == 1 && contentLength < 75) || embedCount > 1) {
                         toRemove = true;
                     }
                     if(toRemove){
-                        curTag.remove();
+                        node.remove();
                     }
                 }
             }
-        }
     }
-    private void cleanHeaders(Element element){
-        for (int i = 0; i < 3; i++){
+    private static void cleanHeaders(Element element){
+        for (int i = 1; i < 7; i++){
             Elements headers = element.getElementsByTag("h" + i);
-            for (int j = headers.size() -1; i >= 0; i--){
-                if(getClassWeight(headers.get(j)) < 0){
-                    headers.get(j).remove();
+            for (Element header: headers){
+                if(getClassWeight(header) < 0 || getClassWeight(header) > 0.33f){
+                    headers.remove();
                 }
             }
         }
     }
-    private boolean isValidByline(String byline){
-        byline = byline.trim();
-        return (byline.length() > 0) && (byline.length() < 100);
-    }
-    private boolean checkByline(Element node, String matchString){
-        if(this.articleByLine != null){
-            return false;
-        }
-        String rel = null;
-        if(node.attr("rel") != null){
-            rel = node.attr("rel");
-        }
-        if(rel != null && ((rel.equals("author") || Pattern.matches(REGEX.byline.toString(),matchString)) && isValidByline(node.text()))){
-            this.articleByLine = node.text().trim();
-            return true;
-        }
-        return false;
-    }
-    private float getLinkDensity(Element element){
+
+    private static float getLinkDensity(Element element){
         int textLength = getInnerText(element, true).length();
         if(textLength == 0){
             return 0;
         }
-        int linkLength = 0;
-        for (Element linkNode :element.getElementsByTag("a")) {
+        float linkLength = 0.0f;
+        for (Element linkNode :getElementsByTag(element, "a")) {
             linkLength += getInnerText(linkNode, true).length();
         }
         return linkLength / textLength;
     }
-    private boolean hasAncestorTag(Element node, String tagName, int maxDepth){
-        int depth = 0;
-        while(node.parent() != null){
-            if(depth > maxDepth){
-                return false;
+
+    protected Element grabArticle(boolean saveUnlikelyCanidates){
+       for (Element node : document.getAllElements()) {
+
+           if (!saveUnlikelyCanidates) {
+               String unlikelyMatch = node.className() + node.id();
+               articleByline(node, unlikelyMatch);
+               Matcher ucm = Patterns.get(Patterns.RegEx.UNLIKELY_CANDIDATES).matcher(unlikelyMatch);
+               Matcher ocm = Patterns.get(Patterns.RegEx.OK_MAYBE_ITS_A_CANDIDATE).matcher(unlikelyMatch);
+               if (ucm.find() && ocm.find() && !"body".equalsIgnoreCase(node.tagName())) {
+                   node.remove();
+                   debug("Removing Unlikely Candidate - " + unlikelyMatch);
+                   continue;
+               }
+           }
+           if ("div".equalsIgnoreCase(node.tagName())) {
+               Matcher dpm = Patterns.get(Patterns.RegEx.DIV_TO_P_ELEMENTS).matcher(node.html());
+               if (!dpm.find()) {
+                   debug("Changing " + node.tagName() + " to div: " + node);
+                   try {
+                       node.tagName("p");
+                   } catch (Exception e) {
+                       debug("Could not alter due to possible IE restriction, no changes made", e);
+                   }
+               }
+           }
+       }
+        Elements parapgraphs = document.getElementsByTag("p");
+        List<Element> canidates = new ArrayList<>();
+        for (Element para : parapgraphs) {
+            Element parent = para.parent();
+            Element grandparent = parent.parent();
+            String innerText = getInnerText(para, true);
+            if (innerText.length() < 25) {
+                continue;
             }
-            if(node.parent().tagName().equalsIgnoreCase(tagName)){
-                return true;
+            if (!parent.hasAttr(CONTENT_SCORE)) {
+                placeContentScore(parent);
+                canidates.add(parent);
             }
-            node = node.parent();
-            depth++;
+            if (!grandparent.hasAttr(CONTENT_SCORE)) {
+                placeContentScore(grandparent);
+                canidates.add(grandparent);
+            }
+               int score = 0;
+               score++;
+               score += innerText.split(",").length;
+               score += Math.min(Math.floor(innerText.length() / 100), 3);
+               incrementContentScore(parent, score);
+               incrementContentScore(grandparent, score / 2);
         }
-        return false;
-    }
-    private Element[] getNodeAncestors(Element node, int maxDepth){
-        Element[] ancestors = new Element[maxDepth];
-        int i = 0;
-        while (node.parent() != null){
-            ancestors[i] = node.parent();
-            if(maxDepth > 0 && ++i == maxDepth){
-                break;
+
+        Element top = null;
+        for(Element candidate: canidates){
+            scaleContentScore(candidate, 1-getLinkDensity(candidate));
+            debug("Candidate: ("+candidate.className()+":"+candidate.id()+":"+getContentScore(candidate)+")");
+            if (top == null || getContentScore(candidate) > getContentScore(top)){
+                top = candidate;
             }
-            node = node.parent();
         }
-        return ancestors;
-    }
-
-    private Element grabArticle(){
-        Document document = this.document;
-        Element page = this.document.body();
-        boolean isPaging = page != null;
-        if(page == null){
-            return null;
+        if(top == null || "body".equalsIgnoreCase(top.tagName())){
+            top = document.createElement("div");
+            top.html(document.body().html());
+            document.body().html("");
+            document.body().appendChild(top);
+            placeContentScore(top);
         }
-        String pageCacheHtml = page.html();
-        this.articleDir = document.ownerDocument().attr("dir");
-        while (true){
-            boolean stripUnlikelyCandidates = this.flagIsActive(this.FLAG_STRIP_UNLIKELYS);
-            Elements elementsToScore = new Elements();
-            Element node = this.document.parent();
-            while (node != null){
-                String matchString = node.className() + " " + node.id();
-                if(checkByline(node, matchString)){
-                    node = this.removeAndGetNext(node);
-                }
 
-                if(stripUnlikelyCandidates){
-                    if(Pattern.matches(REGEX.unlikelyCandidates.toString(), matchString) &&
-                            !Pattern.matches(REGEX.okMaybeItsACandidate.toString(),matchString) &&
-                            !node.tagName().equalsIgnoreCase("BODY") && !node.tagName().equalsIgnoreCase("A")){
-                        node = removeAndGetNext(node);
-                    }
-                }
-                if(DEFAULT_TAGS_TO_SCORE.contains(node.tagName())){
-                    elementsToScore.add(node);
-                }
-                if(node.tagName().equalsIgnoreCase("DIV")){
-                    if(this.hasSinglePInsideElement(node)){
-                        node = node.children().get(0);
-                    }else if(!this.hasChildBlockElement(node)){
-                        node = node.tagName("P");
-                        elementsToScore.add(node);
-                    }else{
-                        for(Element child : node.children()){
-                            Element p = document.createElement("p");
-                            p.text(child.text());
-                            p.attr("style", "display:inline");
-                            child.replaceWith(p);
-                        }
-                    }
-                }
-                node = this.getNextNode(node, true);
+        Element articleContent = document.createElement("div");
+        articleContent.attr("id", "readability-content");
+        int siblingScoreThreshold = Math.max(10, (int)(getContentScore(top) * 0.2f));
+        Elements siblings = top.parent().children();
+        for(Element sibling : siblings){
+            boolean append = true;
+            debug("Sibling Node: ("+sibling.className()+":"+sibling.id()+":"+getContentScore(sibling)+")");
+
+            if(sibling == top){
+                append = true;
             }
-            Map<Element, Float> candidates = new HashMap<>();
-            for (Element elementToScore: elementsToScore){
-                if(elementToScore.parent() == null || elementToScore.parent().tagName() == null){
-                    break;
-                }
-                String innerText = getInnerText(elementToScore, true);
-                if(innerText.length() < 25){
-                    break;
-                }
-                Element[] ancestors = getNodeAncestors(elementToScore, 3);
-                if (ancestors.length == 0){
-                    break;
-                }
-                int contentScore = 0;
-                contentScore += 1;
-                contentScore += innerText.split(",").length;
-                contentScore += Math.min(Math.floor(innerText.length()/ 100), 3);
-                for (int level = 0 ; level < ancestors.length; level++) {
-                    Element ancestor = ancestors[level];
-                    if(ancestor.tagName() != null){
-                        candidates.put(ancestor, readablitiy(ancestor));
-                    }
-                    int scoreDivider;
-                    if(level == 0){
-                        scoreDivider = 1;
-                    }else if(level == 1){
-                        scoreDivider = 2;
-                    }else{
-                        scoreDivider = level * 3;
-                    }
-                    float ancestorScore = candidates.get(ancestor);
-                    ancestorScore += contentScore / scoreDivider;
-                    candidates.put(ancestor, ancestorScore );
-                }
+            if(getContentScore(sibling) >=siblingScoreThreshold){
+                append =true;
             }
-            Map<Element, Float> topCandidates = new HashMap<>();
-            for (int c = 0; c < candidates.size(); c++){
-                Element candidate = (Element) candidates.keySet().toArray()[c];
-                float score = (float) candidates.values().toArray()[c];
-                float candidateScore = score * (1 - getLinkDensity(candidate));
-                candidates.put(candidate, candidateScore);
+            if("p".equalsIgnoreCase(sibling.tagName())){
+                float density = getLinkDensity(sibling);
+                String content = getInnerText(sibling, true);
+                int length = content.length();
 
-                for(int t = 0; t < this.nbTopCandidates; t++){
-                    Element aTopCandidate = (Element) topCandidates.keySet().toArray()[t];
-                    float topScore = (float) topCandidates.values().toArray()[t];
-                    if(aTopCandidate == null || candidateScore > topScore){
-                        topCandidates.put(aTopCandidate, topScore);
-                        if(topCandidates.size() > this.nbTopCandidates){
-                            topCandidates.remove(aTopCandidate);
-                        }
-                        break;
-                    }
-                }
-            }
-            Element topCandidate;
-            float topScore;
-            if(topCandidates.size() != 0){
-                topCandidate = (Element) topCandidates.keySet().toArray()[0];
-                topScore = (float) topCandidates.values().toArray()[0];
-            }else{
-                topCandidate = null;
-                topScore = 0f;
-            }
-
-
-            boolean neededToCreateTopCanidate = false;
-
-            if(topCandidate == null || topCandidate.tagName().equalsIgnoreCase("BODY")){
-                topCandidate = document.createElement("div");
-                neededToCreateTopCanidate = true;
-                Elements kids = page.children();
-                while (kids.size() != 0){
-                    topCandidate.appendChild(kids.get(0));
-                }
-                page.appendChild(topCandidate);
-            }else if(topCandidate != null){
-                Element parent = topCandidate.parent();
-                float lastScore = topScore;
-                float scoreThreshold = lastScore / 3;
-                while (parent != null){
-                    float parentScore = readablitiy(parent);
-                    if (parentScore < scoreThreshold){
-                        break;
-                    }
-                    if(parentScore > lastScore){
-                        topCandidate = parent;
-                        break;
-                    }
-                    lastScore = parentScore;
-                    parent = parent.parent();
-                }
-            }
-
-            Element articleContent = document.createElement("DIV");
-
-            float siblingScoreThreshold =  Math.max(10f, readablitiy(topCandidate) * 0.2f);
-            Elements siblings = topCandidate.siblingElements();
-            for(int s = 0, sl = siblings.size(); s < sl; s++){
-                Element sibling = siblings.get(s);
-                boolean append = false;
-
-                if(sibling == topCandidate){
+                if(length > 80 && density < 0.25f){
                     append = true;
-                }else{
-                    float contentBonus = 0;
-                    if(sibling.className().equalsIgnoreCase(topCandidate.className()) && !topCandidate.className().isEmpty()){
-                        contentBonus += topScore * 0.2;
-                    }
-                    if(readablitiy(sibling) >= siblingScoreThreshold){
-                        append = true;
-                    }else if(sibling.tagName().equalsIgnoreCase("P")){
-                        float density = getLinkDensity(sibling);
-                        String content = getInnerText(sibling, true);
-                        int contentLength = content.length();
-
-                        if(contentLength > 80 && density < 0.25f){
-                            append = true;
-                        }else if(contentLength < 80 && contentLength > 0 && density == 0f && content.split("/\\.( |$)/").length > 0){
-                            append = true;
-                        }
-                    }
-                }
-                if(append){
-                    if(ALTER_TO_DIV_EXCEPTIONS.contains(sibling.tagName())){
-                        sibling.tagName("DIV");
-                    }
-                    articleContent.appendChild(sibling);
-                    s--;
-                    sl--;
-                }
-                prepArticle(articleContent);
-                Element div = document.createElement("DIV");
-                Elements children = articleContent.children();
-                while (children.size() != 0){
-                    div.appendChild(children.get(0));
-                }
-                articleContent.appendChild(div);
-
-                if(getInnerText(articleContent, true).length() < 500){
-                    page.html(pageCacheHtml);
-
-                    if (this.flagIsActive(this.FLAG_STRIP_UNLIKELYS)) {
-                        this.removeFlag(this.FLAG_STRIP_UNLIKELYS);
-                    } else if (this.flagIsActive(this.FLAG_WEIGHT_CLASSES)) {
-                        this.removeFlag(this.FLAG_WEIGHT_CLASSES);
-                    } else if (this.flagIsActive(this.FLAG_CLEAN_CONDITIONALLY)) {
-                        this.removeFlag(this.FLAG_CLEAN_CONDITIONALLY);
-                    } else {
-                        return null;
-                    }
-                } else {
-                    return articleContent;
+                }else if(length<80 && density == 0.0f){
+                    append = true;
                 }
             }
-        }
-
-
-    }
-
-    private boolean hasSinglePInsideElement(Element node){
-        if(node.children().size() != 1 || !node.children().get(0).tagName().equalsIgnoreCase("P")){
-            return false;
-        }
-        return !Pattern.matches(REGEX.hasContent.toString(), node.children().text());
-    }
-
-    private boolean hasChildBlockElement(Element element){
-        for(Element node: element.children()){
-            boolean hasChild = hasChildBlockElement(node);
-            if(this.DIV_TO_P_ELEMS.contains(node.tagName()) || hasChild){
-                return this.DIV_TO_P_ELEMS.contains(node.tagName()) || hasChild;
+            if(append){
+                debug("Appending Sibling: " + sibling);
+                articleContent.appendChild(sibling);
+                continue;
             }
         }
-        return false;
+        prepArticle(articleContent);
+        return articleContent;
     }
 
-    public void cleanStyles(Element element){
-        Element cur = element.child(0);
-        element.removeAttr("style");
+    public static void cleanStyles(Element element){
+        if(element == null){
+            return;
+        }
+        if (!"readability-styled".equals(element.className())) {
+            element.removeAttr("style");
+        }
+        Element cur = element.children().first();
         while (cur != null){
+            if (!"readability-styled".equals(cur.className())) {
+                cur.removeAttr("style");
+            }
             cleanStyles(cur);
             cur = cur.nextElementSibling();
         }
 
     }
+    private void articleByline(Element node, String match){
+        String rel = "";
+        if(node.attributes().size() != 0){
+            rel = node.attr("rel");
+        }
+        Matcher bym = Patterns.get(Patterns.RegEx.BYLINE).matcher(match);
+        if(rel.equalsIgnoreCase("author") || bym.find() || isValidByline(node.text())){
+            byline = node.text().trim();
+        }
+    }
+    private boolean isValidByline(String text){
+        if(text != null){
+            text = text.trim();
+            return (text.length() > 0) && (text.length() < 100);
+        }
+        return false;
+    }
 
     private void prepArticle(Element articleContent){
-        this.cleanStyles(articleContent);
+        cleanStyles(articleContent);
+        destroyBreaks(articleContent);
 
-        this.cleanConditionally(articleContent, "form");
-        this.clean(articleContent, "object");
-        this.clean(articleContent, "embed");
-        this.clean(articleContent, "h1");
-        this.clean(articleContent, "footer");
+        clean(articleContent, "form");
+        clean(articleContent, "object");
+        clean(articleContent, "h1");
 
         if(articleContent.getElementsByTag("h2").size() == 1){
-            this.clean(articleContent, "h2");
+            clean(articleContent, "h2");
         }
-        this.clean(articleContent, "iframe");
-        this.cleanHeaders(articleContent);
+        clean(articleContent, "iframe");
+        cleanHeaders(articleContent);
 
-        this.cleanConditionally(articleContent, "table");
-        this.cleanConditionally(articleContent, "ul");
-        this.cleanConditionally(articleContent, "div");
+        cleanConditionally(articleContent, "table");
+        cleanConditionally(articleContent, "ul");
+        cleanConditionally(articleContent, "div");
 
         for(Element paragraph: articleContent.getElementsByTag("p")){
             int imgCount = paragraph.getElementsByTag("img").size();
             int embedCount = paragraph.getElementsByTag("embed").size();
             int objectCount = paragraph.getElementsByTag("object").size();
-            int iframeCount = paragraph.getElementsByTag("iframe").size();
-            int totalCount = imgCount + embedCount + objectCount + iframeCount;
+            int totalCount = imgCount + embedCount + objectCount;
 
-            if (totalCount == 0 && this.getInnerText(paragraph, false) == null)
-                paragraph.parent().children().remove(paragraph);
+            if (totalCount == 0 && getInnerText(paragraph, false).isEmpty())
+                paragraph.remove();
         }
-        for (Element br: articleContent.getElementsByTag("br")){
-            Element next = nextElement(br.nextElementSibling());
-            if(next != null && next.tagName().equalsIgnoreCase("p")){
-                br.parent().children().remove(br);
-            }
+        try{
+            articleContent.html(articleContent.html().replaceAll("(?i)<br[^>]*>\\s<p", "<p"));
+        }catch (Exception e){
+            debug("Cleaning innerHTML breaks due to IE strict-block");
         }
     }
-    public Article parse() throws Exception {
-        if(maxElemsToParse > 0){
-            int numTags = this.document.select("*").size();
-            if(numTags > maxElemsToParse){
-                throw new Exception("Aborting parsing document; " + numTags + " elements found");
+    public Article parse(){
+        return parse(false);
+    }
+    private Article parse(boolean keepUnlikelys){
+        if(document.body() == null && cache == null){
+            cache = document.body().html();
+        }
+        this.prepDocument();
+
+        Article article = new Article();
+        Metadata metadata = this.getArticleMetadata();
+        if(metadata.Title != null){
+            article.Title =  metadata.Title;
+        }else {
+            article.Title = this.getArticleTitle();
+        }
+        if( metadata.ByLine != null){
+            article.ByLine = metadata.ByLine;
+        }else if(byline != null){
+            article.ByLine = byline;
+        }else {
+            article.ByLine = "";
+        }
+        Element overlay = document.createElement("div");
+        Element innerDiv = document.createElement("div");
+        Element title = document.createElement("h1");
+        title.html( );
+        Element byline = document.createElement("h4");
+        byline.html(article.ByLine);
+        Element articleContent = this.grabArticle(keepUnlikelys);
+        if(getInnerText(articleContent, false).isEmpty()){
+            if(!keepUnlikelys){
+                document.body().html(cache);
+                return parse(true);
+            }else{
+                articleContent.html("<p>Sorry, unable to parse web page</p>");
             }
         }
-//        if(this.document.children().first() == null){
-//            getNextElement() = getNextElementNoProperties();
-//        }
-        removeScripts(this.document);
-
-        this.prepDocument();
-        Metadata metadata = this.getArticleMetadata();
-        String articleTitle;
-        if(metadata.Title != null){
-            articleTitle =  metadata.Title;
-        }else {
-            articleTitle = this.getArticleTitle();
-        }
-
-        Element articleContent = this.grabArticle();
-        if(articleContent == null){
-            return null;
-        }
-        postProcessContent(articleContent);
         if(metadata.Excerpt == null){
             Elements paragraphs = articleContent.getElementsByTag("p");
             if(paragraphs.size() > 0){
                 metadata.Excerpt = paragraphs.get(0).text().trim();
             }
         }
-        Article article = new Article();
+        innerDiv.appendChild(title);
+        innerDiv.appendChild(byline);
+        innerDiv.appendChild(articleContent);
+        overlay.appendChild(innerDiv);
         article.URL = "";
-        article.Title = articleTitle;
-        if(metadata.ByLine != null){
-            article.ByLine = metadata.ByLine;
-        }else if(this.articleByLine != null){
-            article.ByLine = this.articleByLine;
-        }
-        article.Dir = this.articleDir;
         article.Content = articleContent.text();
         article.Excerpt = metadata.Excerpt;
         return article;
 
     }
+
+    private static Elements getElementsByTag(Element e, String tag) {
+        Elements es = e.getElementsByTag(tag);
+        es.remove(e);
+        return es;
+    }
+    private static int getContentScore(Element node) {
+        try {
+            return Integer.parseInt(node.attr(CONTENT_SCORE));
+        }catch(NumberFormatException e) {
+            return 0;
+        }
+    }
+    private static Element incrementContentScore(Element node, int increment) {
+        int score = getContentScore(node);
+        score += increment;
+        node.attr(CONTENT_SCORE, Integer.toString(score));
+        return node;
+    }
+    private static Element scaleContentScore(Element node, float scale) {
+        int score = getContentScore(node);
+        score *= scale;
+        node.attr(CONTENT_SCORE, Integer.toString(score));
+        return node;
+    }
+    protected void debug(String message){
+        debug(message, null);
+    }
+    protected void debug(String message, Throwable throwable){
+        System.out.println(message + (throwable != null ?("\n" + throwable.getMessage()) : "" )+(throwable != null? ("\n" + throwable.getStackTrace()): ""));
+    }
+    private static class Patterns {
+        private static Pattern unlikelyCandidates;
+        private static Pattern okMaybeItsACandidate;
+        private static Pattern positive;
+        private static Pattern negative;
+        private static Pattern divToPElements;
+        private static Pattern videos;
+        private static Pattern byline;
+        private static final String REGEX_REPLACE_BRS = "(?i)(<br[^>]*>[ \n\r\t]*){2,1}";
+        private static final String REGEX_REPLACE_FONTS = "(?i)<(\\/font[^>]*>)";
+        private static final String REGEX_NORMALIZE = "\\s{2,}";
+        private static final String REGEX_KILL_BREAKS = "(<br\\s*\\/?>(\\s|&nbsp;?)*){1,}";
+
+        public enum RegEx{
+            UNLIKELY_CANDIDATES,BYLINE, OK_MAYBE_ITS_A_CANDIDATE,POSITIVE,NEGATIVE,DIV_TO_P_ELEMENTS,VIDEO;
+        }
+        public static Pattern get(RegEx regEx){
+            switch (regEx){
+                case UNLIKELY_CANDIDATES:
+                    if(unlikelyCandidates == null){
+                        unlikelyCandidates = Pattern.compile("combox|comment|foot|header|menu|meta|nav|rss|shoutbox|sidebar|sponser", Pattern.CASE_INSENSITIVE);
+                    }
+                    return unlikelyCandidates;
+                case OK_MAYBE_ITS_A_CANDIDATE:
+                    if(okMaybeItsACandidate == null){
+                        okMaybeItsACandidate = Pattern.compile("and|article|body|column|main", Pattern.CASE_INSENSITIVE);
+                    }
+                    return okMaybeItsACandidate;
+                case POSITIVE: {
+                    if (positive == null) {
+                        positive = Pattern.compile("article|body|content|entry|hentry|page|pagination|post|text", Pattern.CASE_INSENSITIVE);
+                    }
+                    return positive;
+                }
+                case NEGATIVE: {
+                    if (negative == null) {
+                        negative = Pattern.compile("combx|comment|contact|foot|footer|footnote|link|media|meta|promo|related|scroll|shoutbox|sponsor|tags|widget", Pattern.CASE_INSENSITIVE);
+                    }
+                    return negative;
+                }
+                case DIV_TO_P_ELEMENTS: {
+                    if (divToPElements == null) {
+                        divToPElements= Pattern.compile("<(a|blockquote|dl|div|img|ol|p|pre|table|ul)", Pattern.CASE_INSENSITIVE);
+                    }
+                    return divToPElements;
+                }
+                case VIDEO: {
+                    if (videos == null) {
+                        videos = Pattern.compile("http:\\/\\/(www\\.)?(youtube|vimeo)\\.com",Pattern.CASE_INSENSITIVE);
+                    }
+                    return videos;
+                }
+                case BYLINE:
+                    if(byline == null){
+                        byline = Pattern.compile("/byline|author|ateline|writtenby/i", Pattern.CASE_INSENSITIVE);
+                    }
+                    return byline;
+            }
+            return null;
+            }
+        }
 }

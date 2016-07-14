@@ -7,13 +7,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
-import android.text.Layout;
 import android.text.SpannableString;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
@@ -25,10 +22,8 @@ import com.greenfrvr.hashtagview.HashtagView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public class TagActivity extends BaseActivity {
