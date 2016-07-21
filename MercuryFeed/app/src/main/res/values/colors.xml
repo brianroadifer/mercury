@@ -4,11 +4,11 @@
     <color name="colorPrimaryDark">#3849a2</color>
     <color name="colorBackground">#ffffff</color>
     <color name="colorForeground">#000</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#ff4081</color>
     <color name="navigationBarColor">#000000</color>
     <color name="primaryTextColor">#000000</color>
     <color name="secondaryTextColor">#222222</color>
-    <color name="primaryTextColorInverse">#FFF</color>
+    <color name="primaryTextColorInverse">#ffffff</color>
     <color name="secondaryTextColorInverse">#ddd</color>
     <color name="whiteAlpha">#4fff</color>
 </resources>

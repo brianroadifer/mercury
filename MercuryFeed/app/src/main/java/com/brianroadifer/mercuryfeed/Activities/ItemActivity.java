@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -20,7 +21,7 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ShareActionProvider;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.Helpers.ReadArticle;
@@ -29,7 +30,6 @@ import com.brianroadifer.mercuryfeed.R;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.picasso.Picasso;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -46,6 +46,10 @@ public class ItemActivity extends AppCompatActivity {
     Animation hide_fab_read;
     Animation show_fab_save;
     Animation hide_fab_save;
+
+    String title,url,imageUrl,author,description,date;
+
+    ShareActionProvider shareActionProvider;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -68,12 +72,14 @@ public class ItemActivity extends AppCompatActivity {
         show_fab_save = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_read_show);
         hide_fab_save = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_read_hide);
 
-        String imageUrl = bundle.getString("Image");
-        String title = bundle.getString("Title");
-        String author = bundle.getString("Author");
-        String description = bundle.getString("Description");
-        String date = formatDate(bundle.getString("Date"));
-        final String url = bundle.getString("Link");
+        imageUrl = bundle.getString("Image");
+        title = bundle.getString("Title");
+        author = bundle.getString("Author");
+        description = bundle.getString("Description");
+        date = formatDate((Date) bundle.get("Date"));
+        url = bundle.getString("Link");
+
+
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fabBrowser = (FloatingActionButton) findViewById(R.id.fab_browser);
@@ -135,7 +141,9 @@ public class ItemActivity extends AppCompatActivity {
             }
         });
         ImageView imageView = (ImageView) findViewById(R.id.item_image);
-        Picasso.with(this).load(imageUrl).into(imageView);
+
+        String thumb = imageUrl.isEmpty()? null: imageUrl;
+        Picasso.with(this).load(thumb).placeholder(R.drawable.test).error(R.drawable.test).into(imageView);
         TextView titleView = (TextView) findViewById(R.id.item_title);
         titleView.setText(title);
         TextView descriptionView = (TextView) findViewById(R.id.item_description);
@@ -160,18 +168,25 @@ public class ItemActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
-            case R.id.item_settings:
-                Toast.makeText(this, "Settings Not Enabled", Toast.LENGTH_SHORT).show();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            case R.id.action_share:
+                shareItemURL();
+                break;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.navigation, menu);
+        getMenuInflater().inflate(R.menu.menu_feed_item, menu);
         return true;
+    }
+    public void shareItemURL(){
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, url);
+        startActivity(Intent.createChooser(shareIntent,"Share Via"));
     }
     private void showFab() {
 
@@ -225,15 +240,11 @@ public class ItemActivity extends AppCompatActivity {
         fabSave.setClickable(false);
     }
 
-    public String formatDate(String date){
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z", Locale.US);
-        Date newDate;
+    public String formatDate(Date date){
+        SimpleDateFormat format;
         try {
-            newDate = format.parse(date);
             format = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US);
-            return  format.format(newDate);
-        } catch (ParseException e) {
-            return date;
+            return  format.format(date);
         }catch (NullPointerException ne){
             return "";
         }

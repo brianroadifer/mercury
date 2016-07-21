@@ -1,31 +1,47 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
+import android.animation.Animator;
 import android.content.Context;
 import android.content.Intent;
+import android.support.design.widget.Snackbar;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.brianroadifer.mercuryfeed.Activities.ItemActivity;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.Models.Item;
 import com.brianroadifer.mercuryfeed.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by Brian Roadifer on 5/28/2016.
  */
 public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHolder> {
+    DatabaseReference feedItemDB = FirebaseDatabase.getInstance().getReference();
     Feed feed;
     Context context;
 
@@ -44,31 +60,54 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final Item current = feed.Items.get(position);
-        holder.Title.setText(current.getTitle());
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss Z", Locale.US);
-        Date newDate;
+        holder.Title.setText(current.title);
         try {
-            newDate = format.parse(current.getPubDate());
-            format = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US);
-            holder.Info.setText(feed.Title + " / by " +current.getAuthor()+ " / " + Difference(newDate));
-        } catch (ParseException e) {
-            holder.Info.setText(feed.Title + " / by "+ current.getAuthor()+" / "+ current.getPubDate());
+            holder.Info.setText(feed.Title + " / by " +current.author+ " / " + Difference(current.pubDate));
         }catch (NullPointerException ne){
-            holder.Info.setText(feed.Title + " / by " + current.getAuthor());
+            holder.Info.setText(feed.Title + " / by " + current.author);
         }
-        holder.Content.setText(current.getDescription());
-        Picasso.with(context).load(current.getThumbnailUrl()).into(holder.Thumbnail);
+        holder.Content.setText(current.description);
+        String thumb = current.thumbnailUrl.isEmpty()? null: current.thumbnailUrl;
+        Picasso.with(context).load(thumb).placeholder(R.drawable.test).error(R.drawable.test).into(holder.Thumbnail);
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, ItemActivity.class);
-                intent.putExtra("Link", current.getLink());
-                intent.putExtra("Author", current.getAuthor());
-                intent.putExtra("Date", current.getPubDate());
-                intent.putExtra("Image", current.getThumbnailUrl());
-                intent.putExtra("Description", current.getDescription());
-                intent.putExtra("Title", current.getTitle());
+                intent.putExtra("Link", current.link);
+                intent.putExtra("Author", current.author);
+                intent.putExtra("Date", current.pubDate);
+                intent.putExtra("Image", current.thumbnailUrl);
+                intent.putExtra("Description", current.description);
+                intent.putExtra("Title", current.title);
+
+                Map<String,Object> read = new HashMap<>();
+                read.put("/feed_items/"+current.ID +"/user-read/"+ FirebaseAuth.getInstance().getCurrentUser().getUid().toString(),true);
+                feedItemDB.updateChildren(read);
+                Snackbar.make(v, "Read "+ current.title.substring(0,24), Snackbar.LENGTH_INDEFINITE).show();
+                v.setActivated(true);
+                v.setAlpha(0.5f);
                context.startActivity(intent);
+            }
+
+        });
+        holder.cardView.setOnLongClickListener(new View.OnLongClickListener(){
+            @Override
+            public boolean onLongClick(View v) {
+                Map<String,Object> read = new HashMap<>();
+                read.put("/feed_items/"+current.ID +"/user-read/"+ FirebaseAuth.getInstance().getCurrentUser().getUid().toString(),!v.isActivated());
+
+                if(v.isActivated()){
+                    Snackbar.make(v, "Marked " + current.title.substring(0,24) + "... as unread", Snackbar.LENGTH_LONG).show();
+                    v.setAlpha(1f);
+                    v.setActivated(false);
+                }else{
+                    Snackbar.make(v, "Marked " + current.title.substring(0,24) + "... as read", Snackbar.LENGTH_LONG).show();
+                    v.setAlpha(0.5f);
+                    v.setActivated(true);
+                }
+                feedItemDB.updateChildren(read);
+
+                return true;
             }
         });
     }
@@ -83,17 +122,20 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
     }
 
+
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView Title, Content, Info;
         ImageView Thumbnail;
-        GridLayout cardView;
+        CardView cardView;
         public ViewHolder(View itemView) {
             super(itemView);
             Title = (TextView)itemView.findViewById(R.id.news_title);
             Content = (TextView) itemView.findViewById(R.id.news_content);
             Info = (TextView)itemView.findViewById(R.id.news_info);
             Thumbnail = (ImageView)itemView.findViewById(R.id.news_image);
-            cardView = (GridLayout) itemView.findViewById(R.id.card_view);
+            cardView = (CardView) itemView.findViewById(R.id.card_view);
+
         }
     }
     public String Difference(Date pastDate){
