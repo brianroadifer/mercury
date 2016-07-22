@@ -3,6 +3,7 @@ package com.brianroadifer.mercuryfeed.Helpers;
 import android.util.Log;
 
 import com.brianroadifer.mercuryfeed.Models.Feed;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -19,13 +20,14 @@ import java.util.Map;
  */
 public class DatabaseHelper {
     DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+    FirebaseAuth auth = FirebaseAuth.getInstance();
     public List<Feed> feeds = new ArrayList<>();
     public void writeFeedToDataBase(String feedUrl, String title) {
         String key = database.child("feeds").push().getKey();
-        Feed feed = new Feed(feedUrl, title);
-        Map<String, Object> feedValues = feed.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/feeds/"+key, feedValues);
+        childUpdates.put("/feeds/"+key+"/feedUrl/",feedUrl);
+        childUpdates.put("/feeds/"+key+"/title/", title);
+        childUpdates.put("/users/"+auth.getCurrentUser().getUid()+"/subscribed/"+key, true);
         database.updateChildren(childUpdates);
     }
 

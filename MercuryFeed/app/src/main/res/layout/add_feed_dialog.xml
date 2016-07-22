@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/abc_dialog_padding_material">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Add Feed"
+        android:id="@+id/textView2" />
+
+    <AutoCompleteTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Title"
+        android:id="@+id/feed_dialog_title"
+        android:layout_gravity="center_horizontal" />
+    <AutoCompleteTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Url"
+        android:id="@+id/feed_dialog_url"
+        android:layout_gravity="center_horizontal" />
+
+    <RelativeLayout android:layout_height="wrap_content" android:layout_width="match_parent">
+
+        <Button
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Search Feeds"
+            android:id="@+id/tag_dialog_btn_search"
+            android:background="@color/accent_material_dark"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Add Feed"
+            android:id="@+id/tag_dialog_btn_yes"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:background="@color/accent_material_dark"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Dismiss"
+            android:id="@+id/tag_dialog_btn_no"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:background="@color/accent_material_dark"
+            android:layout_gravity="center_horizontal"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
+
+</LinearLayout>

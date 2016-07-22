@@ -1,37 +1,76 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
+import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
 import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
 import com.brianroadifer.mercuryfeed.Models.Feed;
+import com.brianroadifer.mercuryfeed.Models.Tag;
 import com.brianroadifer.mercuryfeed.R;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Brian Roadifer on 6/28/2016.
  */
-public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    DatabaseReference database;
+public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener  {
+    public static final String TAG = "BaseActivity";
+    public static final String ANONYMOUS = "anonymous";
+    private String mUsername;
+    private String mPhotoUrl;
+    private String mEmail;
+    private SharedPreferences preferences;
+
+
+    FirebaseAuth fireAuth;
+    FirebaseUser firebaseUser;
+
+    private GoogleApiClient apiClient;
+
+    DatabaseReference feedsDB = FirebaseDatabase.getInstance().getReference().child("feeds");
+    DatabaseReference feedsItemDB = FirebaseDatabase.getInstance().getReference().child("feed_items");
+    DatabaseReference userFeedsDB;
     public List<Feed> feeds = new ArrayList<>();
+    public List<String> subscribed = new ArrayList<>();
     ArticleHelper articleHelper = new ArticleHelper(this);
     TagHelper tagHelper = new TagHelper(this);
 
@@ -41,55 +80,93 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Thread load = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                database = FirebaseDatabase.getInstance().getReference().child("feeds");
-                database.addListenerForSingleValueEvent(new ValueEventListener() {
+
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mUsername = ANONYMOUS;
+
+        fireAuth = FirebaseAuth.getInstance();
+        firebaseUser = fireAuth.getCurrentUser();
+
+        if(firebaseUser == null){
+            startActivity( new Intent(this, GoogleSignInActivity.class));
+            finish();
+            return;
+        }else{
+            mUsername = firebaseUser.getDisplayName();
+            mPhotoUrl = firebaseUser.getPhotoUrl().toString();
+            mEmail = firebaseUser.getEmail();
+        }
+        userFeedsDB = FirebaseDatabase.getInstance().getReference().child("users/"+ firebaseUser.getUid()+"/subscribed");
+        apiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this,this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API).build();
+
+
+
+
+
+                userFeedsDB.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
-                        for(DataSnapshot snap: snapshots){
-                            String url = "";
-                            String title = "";
-                            for(DataSnapshot child : snap.getChildren()){
-                                if(child.getKey().equals("title")){
-                                    title = child.getValue(String.class);
-                                }
-                                if(child.getKey().equals("feedUrl")){
-                                    url = child.getValue(String.class);
-                                }
-                            }
-                            feeds.add(new Feed(url, title));
+                        for(DataSnapshot child: dataSnapshot.getChildren()){
+                            Log.w(TAG,"subscribed"+child.getKey());
+                            subscribed.add(child.getKey());
                         }
-                        Log.d("onDataChange", "Value: " + feeds);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+                feedsDB.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        dataSnapshot.getKey();
+                        Iterable<DataSnapshot> snapshots = dataSnapshot.getChildren();
+                        for(DataSnapshot snap: snapshots) {
+                                if (subscribed.contains(snap.getKey())) {
+                                    Log.w(TAG, "feeds:" + snap.getKey());
+
+                                String url = "";
+                                String title = "";
+                                String id = "";
+                                for (DataSnapshot child : snap.getChildren()) {
+                                    if (child.getKey().equals("title")) {
+                                        title = child.getValue(String.class);
+                                    }
+                                    if (child.getKey().equals("feedUrl")) {
+                                        url = child.getValue(String.class);
+                                    }
+                                    id = snap.getKey();
+                                }
+                                feeds.add(new Feed(url, title, id));
+                            }
+                        }
+                        Log.d(TAG,"onDataChange:value: " + feeds);
                         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
                         navigationView.setNavigationItemSelectedListener(BaseActivity.this);
                         Menu menu = navigationView.getMenu();
                         for(final Feed fd : feeds){
-                            Log.d("onDataChange", "Title: " + fd.toMap().toString());
+                            Log.d(TAG,"onDataChange:title: " + fd.Title);
                             final MenuItem item = menu.add(R.id.nav_feed_group, Menu.FIRST, Menu.FLAG_APPEND_TO_GROUP, fd.Title);
                             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                             intent.putExtra("URL", fd.FeedUrl);
                             intent.putExtra("Title", fd.Title);
+                            intent.putExtra("ID", fd.ID);
                             item.setIntent(intent);
                         }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Log.w("getFeeds:onCancelled", databaseError.toException());
+                        Log.w(TAG,"getFeeds:onCancelled", databaseError.toException());
                     }
 
                 });
-            }
-        });
-        load.start();
-        try {
-            load.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -102,29 +179,10 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.navigation, menu);
-//        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-//        SearchView searchView = (SearchView) menu.findItem(R.id.action_search);
-//        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        return true;
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
+        // Handle options_menu view item clicks here.
         int id = item.getItemId();
         Log.d("setmeup", id +"");
         switch (id) {
@@ -136,6 +194,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_add_feed:
                 startActivity(new Intent(this, AddFeedActivity.class));
+//                createDialog();
                 break;
             case R.id.nav_tags:
                 startActivity(new Intent(this, TagActivity.class));
@@ -157,5 +216,53 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
 
     public List<Feed> getFeeds(){
         return feeds;
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(TAG, "onConnectionFailed:"+connectionResult);
+    }
+
+    private void createDialog() {
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View feedDialogView = factory.inflate(R.layout.add_feed_dialog, null);
+        final AlertDialog feedDialog = new AlertDialog.Builder(this).create();
+        final AutoCompleteTextView addTitle = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_title);
+        final AutoCompleteTextView addUrl = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_url);
+        final DatabaseHelper dh = new DatabaseHelper();
+
+        feedDialog.setView(feedDialogView);
+        feedDialogView.findViewById(R.id.tag_dialog_btn_yes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String title = addTitle.getText().toString();
+                String url = addUrl.getText().toString();
+                if ((title != null || !title.equals("") && (url != null || url.equals("")))) {
+                    try {
+                        dh.writeFeedToDataBase(url, title);
+                        Toast.makeText(getApplicationContext(), "Added " + title, Toast.LENGTH_SHORT).show();
+                        finish();
+                    } catch (DatabaseException e) {
+                        Toast.makeText(getApplicationContext(), "Cannot add " + title, Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+
+                }
+                feedDialog.dismiss();
+            }
+        });
+        feedDialog.findViewById(R.id.tag_dialog_btn_no).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                feedDialog.dismiss();
+            }
+        });
+        feedDialog.findViewById(R.id.tag_dialog_btn_search).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), SearchResultsActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }

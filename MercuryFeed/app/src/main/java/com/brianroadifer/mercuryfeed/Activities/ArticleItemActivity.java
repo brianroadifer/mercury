@@ -16,6 +16,8 @@ import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.SpannableString;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -319,6 +321,29 @@ public class ArticleItemActivity extends AppCompatActivity {
         fabDelete.setLayoutParams(layoutParams3);
         fabDelete.startAnimation(hide_fab_delete);
         fabDelete.setClickable(false);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch (item.getItemId()){
+            case R.id.action_share:
+                shareItemURL();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu_feed_item, menu);
+        return true;
+    }
+    public void shareItemURL(){
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, article.Title);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, article.URL);
+        startActivity(Intent.createChooser(shareIntent,"Share Via"));
     }
 
 }

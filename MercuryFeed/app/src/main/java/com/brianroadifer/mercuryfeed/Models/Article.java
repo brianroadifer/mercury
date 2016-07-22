@@ -1,6 +1,7 @@
 package com.brianroadifer.mercuryfeed.Models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ public class Article implements Serializable {
     public String ByLine;
     public String Dir;
     public String Excerpt;
-    public List<Tag> Tags;
+    public List<Tag> Tags = new ArrayList<>();
 
     public Article(){}
 }
