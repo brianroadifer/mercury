@@ -2,6 +2,10 @@ package com.brianroadifer.mercuryfeed.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.customtabs.CustomTabsIntent;
@@ -9,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,7 +35,9 @@ import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Tag;
 import com.brianroadifer.mercuryfeed.R;
 import com.greenfrvr.hashtagview.HashtagView;
+import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -136,16 +143,25 @@ public class ArticleItemActivity extends AppCompatActivity {
 
 
         TextView title = (TextView) findViewById(R.id.article_title);
+
         TextView content = (TextView) findViewById(R.id.article_content);
-        WebView webView = (WebView) findViewById(R.id.article_content_html);
-        webView.setWebViewClient(new WebViewClient(){
+        Html.ImageGetter imageGetter = new Html.ImageGetter() {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url){
-                return false;
+            public Drawable getDrawable(String source) {
+                Bitmap image = null;
+                try {
+                    image = Picasso.with(getApplicationContext()).load(source).error(R.drawable.test).placeholder(R.drawable.test).get();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                BitmapDrawable bitDraw = new BitmapDrawable(getResources(),image);
+                if(image != null){
+                    return bitDraw.getCurrent();
+                }
+                return null;
             }
-        });
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadData(article.Content, "text/html", "utf-8");
+        };
+        content.setText(Html.fromHtml(article.Content, imageGetter, null));
         title.setText(article.Title);
         content.setText(article.Content);
         final HashtagView tags = (HashtagView) findViewById(R.id.article_tag_view);

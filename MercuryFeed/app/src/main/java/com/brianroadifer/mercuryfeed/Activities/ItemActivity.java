@@ -3,7 +3,11 @@ package com.brianroadifer.mercuryfeed.Activities;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.FloatingActionButton;
@@ -11,13 +15,14 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -30,6 +35,8 @@ import com.brianroadifer.mercuryfeed.R;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -147,19 +154,13 @@ public class ItemActivity extends AppCompatActivity {
         TextView titleView = (TextView) findViewById(R.id.item_title);
         titleView.setText(title);
         TextView descriptionView = (TextView) findViewById(R.id.item_description);
-        descriptionView.setText(description);
+        
+        descriptionView.setText(Html.fromHtml(description));
+        descriptionView.setMovementMethod(LinkMovementMethod.getInstance());
         TextView infoView = (TextView) findViewById(R.id.item_info);
         infoView.setText("by " + author + " / " + date);
 
-        WebView feedWeb = (WebView) findViewById(R.id.item_web);
-        feedWeb.setWebViewClient(new WebViewClient(){
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url){
-                return false;
-            }
-        });
-        feedWeb.getSettings().setJavaScriptEnabled(true);
-        feedWeb.loadData(htmlSetup(description), "text/html", "utf-8");
+
 
 
         LeakCanary.install(application);
