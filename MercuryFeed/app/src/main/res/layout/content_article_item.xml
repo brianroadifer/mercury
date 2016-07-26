@@ -27,13 +27,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/article_content"
-        android:layout_below="@+id/article_title"/>
-
-    <WebView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/article_content"
-        android:id="@+id/article_content_html"/>
+        android:layout_below="@+id/article_title"
+        android:textColor="@color/colorForeground"
+        android:textColorHighlight="@color/colorAccent"
+        android:textColorLink="@color/colorPrimaryDark"
+        android:linksClickable="true"
+        android:textIsSelectable="true"
+        android:textSize="16dp" />
 
     <TextView
         android:layout_width="match_parent"
@@ -41,10 +41,16 @@
         android:id="@+id/article_tag_header"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/title_activity_tag"
-        android:layout_below="@+id/article_content_html"
+        android:layout_below="@+id/article_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp" />
 
+<HorizontalScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/article_tag_header"
+    android:scrollIndicators="none"
+    android:id="@+id/scrollView">
 
     <com.greenfrvr.hashtagview.HashtagView
         android:layout_width="match_parent"
@@ -52,6 +58,8 @@
         android:id="@+id/article_tag_view"
         android:layout_below="@+id/article_tag_header"
         app:rowMode="wrap"
+        app:rowsQuantity="1"
+        app:tagTextSize="20dp"
         app:rowGravity="left"
         app:selectionMode="false"
         app:tagBackground="@color/colorPrimary"
@@ -60,7 +68,12 @@
         app:tagPaddingLeft="@dimen/default_item_padding"
         app:tagPaddingRight="@dimen/default_item_padding"
         app:tagPaddingTop="@dimen/default_item_padding"
-        app:tagTextColor="@color/colorForeground"/>
+        app:tagTextColor="@color/colorBackground"
+        android:longClickable="true"
+        app:dynamicMode="true"/>
+
+</HorizontalScrollView>
+
 
 
 </RelativeLayout>

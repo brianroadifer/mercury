@@ -16,7 +16,6 @@ import java.util.UUID;
  * Created by Brian Roadifer on 6/27/2016.
  */
 public class ReadArticle extends AsyncTask<String, Void, Article> {
-    String htmlUrl = "http://www.theverge.com/2016/6/27/12040196/president-obama-pardon-edward-snowden-free";
     Article article = new Article();
     String url;
 

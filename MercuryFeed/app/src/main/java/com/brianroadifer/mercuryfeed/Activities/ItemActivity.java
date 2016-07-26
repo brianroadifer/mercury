@@ -2,14 +2,18 @@ package com.brianroadifer.mercuryfeed.Activities;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
@@ -29,6 +33,7 @@ import android.widget.TextView;
 import android.widget.ShareActionProvider;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
+import com.brianroadifer.mercuryfeed.Helpers.PicassoImageGetter;
 import com.brianroadifer.mercuryfeed.Helpers.ReadArticle;
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.R;
@@ -154,16 +159,18 @@ public class ItemActivity extends AppCompatActivity {
         TextView titleView = (TextView) findViewById(R.id.item_title);
         titleView.setText(title);
         TextView descriptionView = (TextView) findViewById(R.id.item_description);
-        
-        descriptionView.setText(Html.fromHtml(description));
+        final PicassoImageGetter imageGetter = new PicassoImageGetter(descriptionView,getResources(), Picasso.with(getApplicationContext()));
+        Html.ImageGetter nIm = new Html.ImageGetter() {
+            @Override
+            public Drawable getDrawable(String source) {
+                return imageGetter.getDrawable(source);
+            }
+        };
+
+        descriptionView.setText(Html.fromHtml(description, nIm, null));
         descriptionView.setMovementMethod(LinkMovementMethod.getInstance());
         TextView infoView = (TextView) findViewById(R.id.item_info);
         infoView.setText("by " + author + " / " + date);
-
-
-
-
-        LeakCanary.install(application);
     }
 
     @Override
@@ -171,6 +178,13 @@ public class ItemActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.action_share:
                 shareItemURL();
+                break;
+            case R.id.action_browser:
+                openInAppChrome(url);
+                break;
+            case R.id.action_second:
+                break;
+            case R.id.action_third:
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -189,6 +203,22 @@ public class ItemActivity extends AppCompatActivity {
         shareIntent.putExtra(Intent.EXTRA_TEXT, url);
         startActivity(Intent.createChooser(shareIntent,"Share Via"));
     }
+
+    public void openInAppChrome(String url){
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        builder.setToolbarColor(getResources().getColor(R.color.colorPrimary));
+        builder.setSecondaryToolbarColor(getResources().getColor(R.color.colorAccent));
+        builder.setShowTitle(true);
+        builder.enableUrlBarHiding();
+        builder.addDefaultShareMenuItem();
+
+        CustomTabsIntent customTabsIntent = builder.build();
+        customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(Intent.URI_ANDROID_APP_SCHEME + "//" + this.getPackageName()));
+        customTabsIntent.launchUrl(this, Uri.parse(url));
+        hideFab();
+        status = false;
+    }
+
     private void showFab() {
 
         //Floating Action Button 1

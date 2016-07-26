@@ -25,6 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 
@@ -140,7 +141,9 @@ public class ArticleItemActivity extends AppCompatActivity {
                 finish();
             }
         });
-
+        HorizontalScrollView scrollView = (HorizontalScrollView) findViewById(R.id.scrollView);
+        scrollView.setVerticalScrollBarEnabled(false);
+        scrollView.setHorizontalScrollBarEnabled(false);
 
         TextView title = (TextView) findViewById(R.id.article_title);
 
@@ -163,7 +166,6 @@ public class ArticleItemActivity extends AppCompatActivity {
         };
         content.setText(Html.fromHtml(article.Content, imageGetter, null));
         title.setText(article.Title);
-        content.setText(article.Content);
         final HashtagView tags = (HashtagView) findViewById(R.id.article_tag_view);
         tags.addOnTagClickListener(new HashtagView.TagsClickListener() {
             @Override
