@@ -77,12 +77,11 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-//        NavigationView nav = (NavigationView) findViewById(R.id.nav_view);
-//        View  ll = nav.getHeaderView();
-//        photo = (ImageView) ll.findViewById(R.id.user_img);
-//        username = (TextView) ll.findViewById(R.id.user_name);
-//        email = (TextView) ll.findViewById(R.id.user_email);
-
+        NavigationView nav = (NavigationView) findViewById(R.id.nav_view);
+        View  ll = nav.getHeaderView(0);
+        photo = (ImageView) ll.findViewById(R.id.user_img);
+        username = (TextView) ll.findViewById(R.id.user_name);
+        email = (TextView) ll.findViewById(R.id.user_email);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         mUsername = ANONYMOUS;
@@ -104,7 +103,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"userName:OnDataChange:"+ dataSnapshot.getValue().toString());
                 mUsername = dataSnapshot.getValue().toString();
-
+                username.setText(mUsername);
             }
 
             @Override
@@ -116,7 +115,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"email:OnDataChange:"+ dataSnapshot.getValue().toString());
                 mEmail = dataSnapshot.getValue().toString();
-
+                email.setText(mEmail);
             }
 
             @Override
@@ -129,6 +128,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"profilePicture:OnDataChange:"+ dataSnapshot.getValue().toString());
                 mPhotoUrl = dataSnapshot.getValue().toString();
+                Picasso.with(getApplicationContext()).load(mPhotoUrl).into(photo);
             }
 
             @Override

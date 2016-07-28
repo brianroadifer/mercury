@@ -76,7 +76,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         if(current.thumbnailUrl.isEmpty()){
             holder.Thumbnail.setVisibility(View.GONE);
         }else{
-            Picasso.with(context).load(current.thumbnailUrl).placeholder(R.drawable.test).error(R.drawable.test).into(holder.Thumbnail);
+            Picasso.with(context).load(current.thumbnailUrl).placeholder(R.drawable.placeholder).error(R.drawable.error).into(holder.Thumbnail);
         }
 
         holder.cardView.setOnClickListener(new View.OnClickListener() {

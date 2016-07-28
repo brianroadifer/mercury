@@ -51,9 +51,7 @@ public class MainActivity extends BaseActivity {
 
         if (user != null) {
             Log.d(TAG,"User Signed In");
-//            username.setText(mUsername);
-//            email.setText(mEmail);
-//            Picasso.with(getApplicationContext()).load(mPhotoUrl).into(photo);
+
             Application application = this.getApplication();
             setContentView(R.layout.activity_main);
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -63,8 +61,16 @@ public class MainActivity extends BaseActivity {
                 String url = bundle.getString("URL");
                 String title = bundle.getString("Title");
                 String id = bundle.getString("ID");
-                setTitle(title);
-                feed = new Feed(url, title, id);
+                Feed passFeed = (Feed) bundle.get("Feed");
+                if(passFeed != null){
+                    feed = passFeed;
+                    setTitle(feed.Title);
+                }else{
+                    setTitle(title);
+                    feed = new Feed(url, title, id);
+                }
+            }else{
+                setTitle("All");
             }
 
             feedsItemDB.addListenerForSingleValueEvent(new ValueEventListener() {

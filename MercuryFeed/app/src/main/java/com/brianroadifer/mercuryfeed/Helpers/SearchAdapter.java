@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -22,7 +23,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Brian Roadifer on 7/20/2016.
@@ -30,7 +34,7 @@ import java.util.List;
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
     private static final String TAG = "SearchAdapter";
     List<Feed> feeds;
-    List<String> subFeeds;
+    Map<String, Boolean> subscribed = new HashMap<>();
     Context context;
     FirebaseAuth auth = FirebaseAuth.getInstance();
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("/users/"+auth.getCurrentUser().getUid()+"/subscribed");
@@ -38,17 +42,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public SearchAdapter(List<Feed> feeds, Context context){
         this.feeds = feeds;
         this.context = context;
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
     @Override
     public SearchAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -58,31 +51,55 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final Feed current = feeds.get(position);
         Log.d(TAG, "onBindViewHolder:"+current.Title);
-        if(current != null){
-            holder.Title.setText(current.Title);
-            holder.Subscribe.isActivated();
-            holder.Subscribe.setText("Subscribed");
-            holder.Subscribe.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //Subscrible
-
-                    //Unsubscribe
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    Log.w(TAG, "subscribed:" + child.getKey() + ":value:"+child.getValue());
+                    subscribed.put(child.getKey(), (boolean) child.getValue());
                 }
-            });
 
-            holder.searchResult.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(context, MainActivity.class);
-                    intent.putExtra("Feed", current);
-                    context.startActivity(intent);
+                if (current != null) {
+                    holder.Title.setText(current.Title);
+                    if(subscribed.containsKey(current.ID)) {
+                        holder.Subscribe.setChecked(subscribed.get(current.ID));
+                        holder.Subscribe.setText("Unsubscribe");
+                    }else {
+                        holder.Subscribe.setChecked(false);
+                        holder.Subscribe.setActivated(false);
+                        holder.Subscribe.setText("Subscribe");
+                    }
                 }
-            });
-        }
+                holder.Subscribe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        Map<String, Object>  maps = new HashMap<>();
+                        maps.put(current.ID, isChecked);
+                        reference.updateChildren(maps);
+                        holder.Subscribe.setActivated(isChecked);
+                        String text = isChecked ? "Unsubscribe":"Subscribe";
+                        holder.Subscribe.setText(text);
+                    }
+                });
+
+                holder.searchResult.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(context, MainActivity.class);
+                        intent.putExtra("Feed", current);
+                        context.startActivity(intent);
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override

@@ -155,8 +155,12 @@ public class ItemActivity extends AppCompatActivity {
         });
         ImageView imageView = (ImageView) findViewById(R.id.item_image);
 
-        String thumb = imageUrl.isEmpty()? null: imageUrl;
-        Picasso.with(this).load(thumb).placeholder(R.drawable.test).error(R.drawable.test).into(imageView);
+        if(imageUrl.isEmpty()){
+            imageView.setVisibility(View.GONE);
+        }else{
+            Picasso.with(this).load(imageUrl).placeholder(R.drawable.placeholder).error(R.drawable.error).into(imageView);
+        }
+
         TextView titleView = (TextView) findViewById(R.id.item_title);
         titleView.setText(title);
         TextView descriptionView = (TextView) findViewById(R.id.item_description);
