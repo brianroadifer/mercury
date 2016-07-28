@@ -7,8 +7,10 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".Activities.SearchResultsActivity"
     tools:showIn="@layout/activity_search_results">
+
     <android.support.v7.widget.RecyclerView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/recycler_view"/>
+
 </RelativeLayout>

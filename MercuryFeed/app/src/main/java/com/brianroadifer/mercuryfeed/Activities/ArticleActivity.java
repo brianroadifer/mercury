@@ -70,5 +70,4 @@ public class ArticleActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(articleAdapter);
     }
-
 }

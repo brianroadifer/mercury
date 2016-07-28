@@ -13,10 +13,17 @@
     <EditText
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/add_feed_search"
+        android:hint="Search for Feeds"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"/>
+
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/add_feed_title"
         android:hint="RSS Feed Title"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_below="@+id/add_feed_search" />
 
     <EditText
         android:layout_width="fill_parent"
@@ -24,7 +31,7 @@
         android:id="@+id/add_feed_url"
         android:hint="RSS Feed Url"
         android:layout_below="@+id/add_feed_title"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
         android:inputType="textUri" />
 
     <Button
@@ -33,5 +40,5 @@
         android:text="Add Feed"
         android:id="@+id/add_feed_button"
         android:layout_below="@+id/add_feed_url"
-        android:layout_alignEnd="@+id/add_feed_url" />
+        android:layout_alignRight="@+id/add_feed_url" />
 </RelativeLayout>

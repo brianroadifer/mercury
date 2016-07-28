@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,7 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public class DataReceiverActivity extends AppCompatActivity {
+public class ArticleReceiverActivity extends AppCompatActivity {
     TextView title,url;
     MultiAutoCompleteTextView tags;
     Button save;
@@ -34,7 +33,7 @@ public class DataReceiverActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_data_receiver);
+        setContentView(R.layout.activity_article_receiver);
         title = (TextView) findViewById(R.id.share_title);
         url = (TextView) findViewById(R.id.share_url);
         tags = (MultiAutoCompleteTextView) findViewById(R.id.tag_maker);

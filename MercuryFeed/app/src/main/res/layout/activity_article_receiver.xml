@@ -7,7 +7,9 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".Activities.DataReceiverActivity">
+    tools:context=".Activities.ArticleReceiverActivity"
+    android:background="@color/colorPrimary"
+    android:elevation="5dp">
 
 
     <TextView
@@ -17,9 +19,11 @@
         android:text="Article Title"
         android:id="@+id/share_title"
         android:lines="1"
-        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentLeft="true"
+        android:textColor="@color/colorBackground"
+        android:layout_marginBottom="8dp" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,14 +32,17 @@
         android:id="@+id/share_url"
         android:lines="1"
         android:layout_below="@+id/share_title"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentLeft="true"
+        android:textColor="@color/colorBackground"
+        android:layout_marginBottom="8dp" />
 
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/share_url"
-                android:id="@+id/share_tags">
+                android:id="@+id/share_tags"
+                android:layout_marginBottom="8dp">
 
                 <MultiAutoCompleteTextView
                     android:id="@+id/tag_maker"
@@ -46,17 +53,29 @@
                     android:maxLines="1"
                     android:singleLine="true"
                     android:layout_below="@+id/share_url"
-                    android:layout_alignParentStart="true" />
+                    android:layout_alignParentLeft="true"
+                    android:textColorHint="@color/colorBackground"
+                    android:textColor="@color/colorBackground" />
 
             </android.support.design.widget.TextInputLayout>
 
 
     <Button
+        style="@style/Base.Widget.AppCompat.Button.Borderless"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save Article"
         android:id="@+id/article_save_button"
         android:layout_below="@+id/share_tags"
-        android:layout_alignParentEnd="true" />
+        android:textColor="@color/colorBackground"
+        android:background="@color/colorAccent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/share_tags"
+        android:layout_alignEnd="@+id/share_tags"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:longClickable="false" />
 
 </RelativeLayout>
