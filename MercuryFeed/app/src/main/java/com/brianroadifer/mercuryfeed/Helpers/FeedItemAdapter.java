@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -62,17 +63,27 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         final Item current = feed.Items.get(position);
         holder.Title.setText(current.title);
         try {
-            holder.Info.setText(feed.Title + " / by " +current.author+ " / " + Difference(current.pubDate));
+            holder.Info.setText(feed.Title + " / " + Difference(current.pubDate));
         }catch (NullPointerException ne){
             holder.Info.setText(feed.Title + " / by " + current.author);
         }
-        holder.Content.setText(current.description);
-        String thumb = current.thumbnailUrl.isEmpty()? null: current.thumbnailUrl;
-        Picasso.with(context).load(thumb).placeholder(R.drawable.test).error(R.drawable.test).into(holder.Thumbnail);
+        if(current.description != null){
+            holder.Content.setText(Html.fromHtml(current.description));
+        }else {
+            holder.Content.setVisibility(View.GONE);
+        }
+
+        if(current.thumbnailUrl.isEmpty()){
+            holder.Thumbnail.setVisibility(View.GONE);
+        }else{
+            Picasso.with(context).load(current.thumbnailUrl).placeholder(R.drawable.test).error(R.drawable.test).into(holder.Thumbnail);
+        }
+
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, ItemActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("Link", current.link);
                 intent.putExtra("Author", current.author);
                 intent.putExtra("Date", current.pubDate);
@@ -86,7 +97,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
                 Snackbar.make(v, "Read "+ current.title.substring(0,24), Snackbar.LENGTH_INDEFINITE).show();
                 v.setActivated(true);
                 v.setAlpha(0.5f);
-               context.startActivity(intent);
+                context.startActivity(intent);
             }
 
         });

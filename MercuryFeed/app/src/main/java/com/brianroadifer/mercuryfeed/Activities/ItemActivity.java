@@ -127,6 +127,7 @@ public class ItemActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), ArticleItemActivity.class);
                 intent.putExtra("url", url);
+                intent.putExtra("isRead", true);
                 startActivity(intent);
                 hideFab();
                 status = false;

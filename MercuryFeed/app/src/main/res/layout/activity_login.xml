@@ -15,11 +15,11 @@
 
         <com.google.android.gms.common.SignInButton
             android:id="@+id/sign_in_button"
-            android:layout_width="wrap_content"
+            android:layout_width="171dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="38dp"
             android:layout_below="@+id/sign_button"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="33dp" />
+            android:layout_centerHorizontal="true" />
 
     <ImageView
             android:layout_width="wrap_content"
@@ -69,7 +69,9 @@
                 android:hint="@string/prompt_email"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:textColor="#fff"
+                android:textColorHint="#eee" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -87,7 +89,9 @@
                 android:imeOptions="actionUnspecified"
                 android:inputType="textPassword"
                 android:maxLines="1"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:textColor="#fff"
+                android:textColorHint="#eee" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -108,8 +112,8 @@
         android:text="@string/action_register"
         android:id="@+id/reg_button"
         android:layout_below="@+id/email_login_form"
-        android:layout_alignRight="@+id/email_login_form"
-        android:layout_alignEnd="@+id/email_login_form" />
+        android:layout_toRightOf="@+id/sign_button"
+        android:layout_toEndOf="@+id/sign_button" />
 
 
-    </RelativeLayout>
+</RelativeLayout>

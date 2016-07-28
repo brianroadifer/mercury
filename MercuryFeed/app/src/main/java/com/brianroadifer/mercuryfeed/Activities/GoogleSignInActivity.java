@@ -127,7 +127,17 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                 signInGoogle();
                 break;
             case R.id.sign_button:
-                signInUser(email, password);
+                if(!isVaildPassword(password) && !isVaildEmail(email)){
+                    emailText.setError("Invaild Email");
+                    passwordText.setError("Invalid Password");
+                }
+                else if(!isVaildEmail(email)){
+                    emailText.setError("Invalid Email");
+                }else if (!isVaildPassword(password)){
+                    passwordText.setError("Invalid Password");
+                }else{
+                    signInUser(email, password);
+                }
                 break;
             case R.id.reg_button:
                 if(!isVaildPassword(password) && !isVaildEmail(email)){

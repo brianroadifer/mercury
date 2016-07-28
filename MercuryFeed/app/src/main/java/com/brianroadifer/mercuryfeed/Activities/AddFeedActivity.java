@@ -1,11 +1,15 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
+import android.app.SearchManager;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,25 +17,36 @@ import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.firebase.database.DatabaseException;
 
+import org.jsoup.Jsoup;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class AddFeedActivity extends AppCompatActivity {
+    private final static String TAG = "AddFeedActivity";
     DatabaseHelper dh = new DatabaseHelper();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_feed);
-        final TextView addTitle = (TextView) findViewById(R.id.add_feed_title);
-        final TextView addUrl = (TextView) findViewById(R.id.add_feed_url);
+        final EditText addSearch = (EditText) findViewById(R.id.add_feed_search);
+        final EditText addTitle = (EditText) findViewById(R.id.add_feed_title);
+        final EditText addUrl = (EditText) findViewById(R.id.add_feed_url);
         Button addButton = (Button) findViewById(R.id.add_feed_button);
 
+        pingUpdate();
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String feed = addSearch.getText().toString();
                 String title = addTitle.getText().toString();
                 String url = addUrl.getText().toString();
-                if((title != null || !title.equals("") && (url != null || url.equals("")))){
+                if((!feed.isEmpty() || feed.isEmpty())&& (title.isEmpty() || url.isEmpty())){
+                    Intent query = new Intent(getApplicationContext(), SearchResultsActivity.class);
+                    query.setAction(Intent.ACTION_SEARCH);
+                    query.putExtra(SearchManager.QUERY, feed);
+                    startActivity(query);
+                }else if(!title.isEmpty() && !url.isEmpty()){
                     try{
                         dh.writeFeedToDataBase(url, title);
                         Toast.makeText(getApplicationContext(), "Added " + title, Toast.LENGTH_SHORT).show();
@@ -39,7 +54,7 @@ public class AddFeedActivity extends AppCompatActivity {
                         finish();
                     }catch (DatabaseException e){
                         Toast.makeText(getApplicationContext(), "Cannot add " + title, Toast.LENGTH_SHORT).show();
-                         e.printStackTrace();
+                        e.printStackTrace();
                     }
 
                 }
@@ -47,15 +62,21 @@ public class AddFeedActivity extends AppCompatActivity {
         });
 
     }
-    protected void pingUpdate(){try {
-        URL url = new URL("http://brianroadifer.com/cron_job/index.php");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.connect();
-        String response = connection.getResponseCode()+"";
-        Log.d("Response:",response);
-    }catch (Exception e){
+    protected void pingUpdate(){
+        try{
+            new AsyncTask<Void,Void,Void>(){
 
-    }
+                @Override
+                protected Void doInBackground(Void... params) {
+                    Log.d(TAG, "pingUpdate:Connecting to [http://brianroadifer.com/php_cron/index.php]");
+                    Jsoup.connect("http://brianroadifer.com/php_cron/index.php").request();
+                    Log.d(TAG, "pingUpdate:Connected to [http://brianroadifer.com/php_cron/index.php]");
+                    return null;
+                }
+            }.execute();
+        }catch (Exception e){
+            Log.d(TAG, "pingUpdate:Unable to connect to [http://brianroadifer.com/php_cron/index.php]", e);
+//            e.printStackTrace();
+        }
     }
 }

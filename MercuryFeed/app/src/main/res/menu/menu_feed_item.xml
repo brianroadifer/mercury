@@ -9,19 +9,19 @@
     </item>
     <item android:id="@+id/action_second"
         android:title="@string/action_share"
-        app:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:icon="@drawable/ic_share_white_48dp"
         android:actionProviderClass="android.widget.ShareActionProvider">
     </item>
     <item android:id="@+id/action_third"
         android:title="@string/action_share"
-        app:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:icon="@drawable/ic_share_white_48dp"
         android:actionProviderClass="android.widget.ShareActionProvider">
     </item>
     <item android:id="@+id/action_browser"
         android:title="In App Chrome"
-        app:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:icon="@drawable/ic_browser_48dp"
         android:actionProviderClass="android.widget.ShareActionProvider">
     </item>

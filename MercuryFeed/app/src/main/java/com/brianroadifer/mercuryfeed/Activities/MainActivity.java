@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Helpers.FeedItemAdapter;
 import com.brianroadifer.mercuryfeed.Models.Feed;
@@ -32,6 +33,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.picasso.Picasso;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends BaseActivity {
@@ -49,9 +51,9 @@ public class MainActivity extends BaseActivity {
 
         if (user != null) {
             Log.d(TAG,"User Signed In");
-            username.setText(mUsername);
-            email.setText(mEmail);
-            Picasso.with(getApplicationContext()).load(mPhotoUrl).into(photo);
+//            username.setText(mUsername);
+//            email.setText(mEmail);
+//            Picasso.with(getApplicationContext()).load(mPhotoUrl).into(photo);
             Application application = this.getApplication();
             setContentView(R.layout.activity_main);
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -84,8 +86,7 @@ public class MainActivity extends BaseActivity {
                             item.link = (String) dataSnapshot.child(snap.getKey()).child("link").getValue();
                             item.thumbnailUrl = (String) dataSnapshot.child(snap.getKey()).child("thumbnail").getValue();
                             long unix = (long) dataSnapshot.child(snap.getKey()).child("published").getValue();
-                            Date pubDate = new Date(unix);
-                            item.pubDate = pubDate;
+                            item.pubDate = new Date(unix);
                             if (id.equalsIgnoreCase(feed.ID)) {
                                 if (item != null) {
                                     setTitle(feed.Title);
@@ -97,7 +98,7 @@ public class MainActivity extends BaseActivity {
                             }
                         }
                     }
-
+                   handleFeed(feed);
                 }
 
                 @Override
@@ -112,12 +113,7 @@ public class MainActivity extends BaseActivity {
             drawer.setDrawerListener(toggle);
             toggle.syncState();
 
-            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
-            FeedItemAdapter feedItemAdapter = new FeedItemAdapter(feed, this);
-            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-            recyclerView.setLayoutManager(layoutManager);
-            recyclerView.setAdapter(feedItemAdapter);
             LeakCanary.install(application);
         } else {
             startActivity(new Intent(this, GoogleSignInActivity.class));
@@ -134,5 +130,20 @@ public class MainActivity extends BaseActivity {
         return true;
     }
 
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()){
+//            case R.id.action_search:
+//                startActivity(new Intent(this, SearchResultsActivity.class));
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
+    private void handleFeed(Feed feed){
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        FeedItemAdapter feedItemAdapter = new FeedItemAdapter(feed, getApplicationContext());
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(feedItemAdapter);
+    }
 }

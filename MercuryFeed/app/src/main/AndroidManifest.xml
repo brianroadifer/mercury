@@ -64,7 +64,6 @@
         </activity>
         <activity
             android:name=".Activities.ArticleItemActivity"
-            android:label="@string/title_activity_article_item"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -83,6 +82,9 @@
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
             </intent-filter>
 
             <meta-data
