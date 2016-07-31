@@ -18,8 +18,8 @@ android {
         }
     }
 
-    productFlavors{
-        facebook{
+    productFlavors {
+        facebook {
             minSdkVersion 15
         }
     }

@@ -45,16 +45,7 @@
         <activity
             android:name=".Activities.GoogleSignInActivity"
             android:label="@string/action_sign_in" />
-        <activity
-            android:name=".Activities.SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".Activities.MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".Activities.MainActivity" />
-        </activity>
-        <activity
-            android:name=".Activities.AddFeedActivity" />
+        <activity android:name=".Activities.AddFeedActivity" />
         <activity
             android:name=".Activities.TagActivity"
             android:label="@string/title_activity_tag"
@@ -85,7 +76,7 @@
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
             </intent-filter>
 
             <meta-data
@@ -116,9 +107,19 @@
                 <data android:mimeType="text/*" />
             </intent-filter>
         </activity>
+
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
+
+        <activity
+            android:name=".Activities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".Activities.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.brianroadifer.mercuryfeed.Activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

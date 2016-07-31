@@ -41,7 +41,6 @@
             android:id="@+id/textView4"
             android:layout_row="12"
             android:layout_column="3"
-            android:textColor="@color/primaryTextColorInverse"
             android:textSize="36dp"
             android:textAlignment="center"
             android:layout_below="@+id/imageView2"

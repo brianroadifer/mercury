@@ -51,7 +51,7 @@
             android:lines="1"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
-            android:textColor="@color/colorForeground" />
+            android:textColor="@color/primaryTextColor" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -69,8 +69,8 @@
             android:layout_below="@+id/news_title"
             android:ellipsize="end"
             android:lines="1"
-            android:textColor="@color/colorForeground"
-            android:textColorLink="@color/colorForeground" />
+            android:textColor="@color/primaryTextColor"
+            android:textColorLink="@color/primaryTextColor" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -85,7 +85,7 @@
             android:layout_gravity="bottom"
             android:layout_below="@+id/news_content"
             android:layout_alignParentLeft="true"
-            android:textColor="@color/colorForeground" />
+            android:textColor="@color/primaryTextColor" />
 
     </RelativeLayout>
     </RelativeLayout>

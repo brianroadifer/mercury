@@ -22,7 +22,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:textColor="@color/colorBackground"
         android:layout_marginBottom="8dp" />
     <TextView
         android:layout_width="wrap_content"
@@ -33,7 +32,6 @@
         android:lines="1"
         android:layout_below="@+id/share_title"
         android:layout_alignParentLeft="true"
-        android:textColor="@color/colorBackground"
         android:layout_marginBottom="8dp" />
 
 

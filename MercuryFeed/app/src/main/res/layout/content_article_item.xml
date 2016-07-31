@@ -30,9 +30,9 @@
         android:layout_height="wrap_content"
         android:id="@+id/article_content"
         android:layout_below="@+id/article_title"
-        android:textColor="@color/colorForeground"
+        android:textColor="@color/primaryTextColor"
         android:textColorHighlight="@color/colorAccent"
-        android:textColorLink="@color/colorPrimaryDark"
+        android:textColorLink="@color/secondaryTextColor"
         android:linksClickable="true"
         android:textIsSelectable="true"
         android:textSize="16dp" />
@@ -62,13 +62,13 @@
         app:tagTextSize="20dp"
         app:rowGravity="left"
         app:selectionMode="false"
-        app:tagBackground="@color/colorPrimary"
+        app:tagBackground="@color/colorAccent"
         app:tagForeground="@drawable/flat_button"
         app:tagPaddingBottom="@dimen/default_item_padding"
         app:tagPaddingLeft="@dimen/default_item_padding"
         app:tagPaddingRight="@dimen/default_item_padding"
         app:tagPaddingTop="@dimen/default_item_padding"
-        app:tagTextColor="@color/colorBackground"
+        app:tagTextColor="@color/primaryTextColorInverse"
         android:longClickable="true"
         app:dynamicMode="true"/>
 

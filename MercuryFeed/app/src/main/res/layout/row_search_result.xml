@@ -22,7 +22,6 @@
         android:id="@+id/search_title"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@+id/search_subscribe_switch"
-        android:textColor="@color/colorForeground" />
+        android:layout_toLeftOf="@+id/search_subscribe_switch" />
 
 </RelativeLayout>

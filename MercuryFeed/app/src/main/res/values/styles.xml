@@ -23,8 +23,10 @@
         <item name="android:windowBackground">@color/transparent50</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:windowSwipeToDismiss">true</item>
         <item name="android:windowIsFloating">true</item>
-        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:backgroundDimEnabled">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -32,24 +34,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
-    <style name="MercuryTheme" parent="android:Theme.Material.Light">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:navigationBarColor">@color/navigationBarColor</item>
-        <item name="android:textColorPrimary">@color/primaryTextColor</item>
-        <item name="android:textColorSecondary">@color/secondaryTextColor</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="android:textColorPrimaryInverse">@color/primaryTextColorInverse</item>
-        <item name="android:textColorSecondaryInverse">@color/secondaryTextColorInverse</item>
-        <item name="android:colorForeground">@color/colorForeground</item>
-        <item name="android:colorBackground">@color/colorBackground</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
-    </style>
 
     <style name="AppTheme.BrandedLaunch" parent="AppTheme">
         <item name="android:windowBackground">@drawable/splash</item>
