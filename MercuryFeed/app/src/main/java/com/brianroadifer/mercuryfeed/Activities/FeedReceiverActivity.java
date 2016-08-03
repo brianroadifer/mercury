@@ -1,7 +1,9 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
+import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.R;
 
 import java.util.ArrayList;
@@ -27,6 +30,13 @@ public class FeedReceiverActivity extends AppCompatActivity{
     Button save;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = pref.getString("app_screen", "Light");
+        String primary = pref.getString("app_primary", "Blue Grey");
+        String accent = pref.getString("app_accent", "Blue Grey");
+        String status = pref.getString("app_status", "Blue Grey");
+        String navigation = pref.getString("app_navigation", "Black");
+        decideTheme(theme, primary, accent, status, navigation);
         setContentView(R.layout.activity_feed_receiver);
         title = (TextView) findViewById(R.id.share_title);
         url = (TextView) findViewById(R.id.share_url);
@@ -71,5 +81,14 @@ public class FeedReceiverActivity extends AppCompatActivity{
 
         }
 
+    }
+    private void decideTheme(String themeName, String primary, String accent, String status, String navigation) {
+        ThemeChanger themeChanger = new ThemeChanger(this);
+        themeChanger.screenColor(themeName);
+        themeChanger.primaryColor(primary);
+        themeChanger.accentColor(accent);
+        themeChanger.statusColor(status);
+        themeChanger.navigationColor(navigation);
+        themeChanger.changeTheme();
     }
 }

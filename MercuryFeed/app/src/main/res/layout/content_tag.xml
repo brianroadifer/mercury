@@ -19,13 +19,12 @@
             app:rowGravity="left"
             app:selectionMode="false"
             app:tagTextSize="20dp"
-            app:tagBackground="@color/colorAccent"
+            app:tagBackground="?android:attr/colorPrimaryDark"
             app:tagForeground="@drawable/flat_button"
             app:tagPaddingBottom="@dimen/default_item_padding"
             app:tagPaddingLeft="@dimen/default_item_padding"
             app:tagPaddingRight="@dimen/default_item_padding"
             app:tagPaddingTop="@dimen/default_item_padding"
-            app:tagTextColor="@color/primaryTextColorInverse"
             android:longClickable="true" />
     </ScrollView>
 

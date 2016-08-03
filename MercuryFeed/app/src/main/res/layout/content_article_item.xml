@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="?attr/articleBackground"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".Activities.ArticleItemActivity"
     tools:showIn="@layout/activity_article_item"
@@ -11,16 +12,17 @@
 
 <RelativeLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    >
+    android:background="?attr/articleBackground">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="?attr/articleTextColor"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/article_title"
         android:nestedScrollingEnabled="true" />
@@ -30,9 +32,9 @@
         android:layout_height="wrap_content"
         android:id="@+id/article_content"
         android:layout_below="@+id/article_title"
-        android:textColor="@color/primaryTextColor"
+        android:textColor="?attr/articleTextColor"
         android:textColorHighlight="@color/colorAccent"
-        android:textColorLink="@color/secondaryTextColor"
+        android:textColorLink="?attr/articleTextColor"
         android:linksClickable="true"
         android:textIsSelectable="true"
         android:textSize="16dp" />
@@ -43,6 +45,7 @@
         android:id="@+id/article_tag_header"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/title_activity_tag"
+        android:textColor="?attr/articleTextColor"
         android:layout_below="@+id/article_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp" />
@@ -62,13 +65,13 @@
         app:tagTextSize="20dp"
         app:rowGravity="left"
         app:selectionMode="false"
-        app:tagBackground="@color/colorAccent"
+        app:tagBackground="?attr/articleTextColor"
         app:tagForeground="@drawable/flat_button"
         app:tagPaddingBottom="@dimen/default_item_padding"
         app:tagPaddingLeft="@dimen/default_item_padding"
         app:tagPaddingRight="@dimen/default_item_padding"
         app:tagPaddingTop="@dimen/default_item_padding"
-        app:tagTextColor="@color/primaryTextColorInverse"
+        app:tagTextColor="?attr/articleBackground"
         android:longClickable="true"
         app:dynamicMode="true"/>
 

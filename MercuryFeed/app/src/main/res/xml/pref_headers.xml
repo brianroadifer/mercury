@@ -17,4 +17,10 @@
         android:icon="@drawable/ic_sync_black_24dp"
         android:title="@string/pref_header_data_sync" />
 
+    <header
+        android:fragment="com.brianroadifer.mercuryfeed.Activities.SettingsActivity$ThemePreferenceFragment"
+        android:icon="@drawable/ic_color_lens_black_24dp"
+        android:title="@string/pref_header_colors_set" />
+
+
 </preference-headers>

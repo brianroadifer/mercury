@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:defaultValue="@string/article_themes_default"
+        android:entries="@array/article_themes"
+        android:entryValues="@array/article_themes"
+        android:key="article_theme"
+        android:title="Article Colors"
+        android:summary="Theme"
+        android:dialogTitle="Theme"
+        />
+</PreferenceScreen>

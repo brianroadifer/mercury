@@ -7,10 +7,6 @@
             android:icon="@drawable/ic_home_black_48dp"
             android:id="@+id/nav_all"
             android:title="All" />
-        <item
-            android:icon="@android:drawable/ic_menu_add"
-            android:id="@+id/nav_add_feed"
-            android:title="Add Feed"/>
     </group>
 
     <item android:title="Articles"

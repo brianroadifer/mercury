@@ -1,11 +1,13 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -44,6 +46,9 @@ public class ArticleItemActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String themeName = pref.getString("article_theme", "Light");
+        decideTheme(themeName);
         setContentView(R.layout.activity_article_item);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -135,6 +140,31 @@ public class ArticleItemActivity extends AppCompatActivity {
 
 
 
+    }
+
+    private void decideTheme(String themeName) {
+        switch (themeName.toLowerCase()){
+            case "light":
+                setTheme(R.style.Article_Light);
+                break;
+            case "dark":
+                setTheme(R.style.Article_Dark);
+                break;
+            case "sepia":
+                setTheme(R.style.Article_Sepia);
+                break;
+            case "green":
+                setTheme(R.style.Article_Green);
+                break;
+            case "white":
+                setTheme(R.style.Article_White);
+                break;
+            case "black":
+                setTheme(R.style.Article_Black);
+                break;
+            default:
+                setTheme(R.style.Article_Light);
+        }
     }
 
 

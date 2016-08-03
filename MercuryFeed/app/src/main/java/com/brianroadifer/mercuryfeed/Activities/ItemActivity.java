@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -11,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsServiceConnection;
@@ -35,6 +37,7 @@ import android.widget.ShareActionProvider;
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.Helpers.PicassoImageGetter;
 import com.brianroadifer.mercuryfeed.Helpers.ReadArticle;
+import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.R;
 import com.squareup.leakcanary.LeakCanary;
@@ -68,7 +71,13 @@ public class ItemActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         final Activity activity = this;
         Application application = this.getApplication();
-
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = pref.getString("app_screen", "Light");
+        String primary = pref.getString("app_primary", "Blue Grey");
+        String accent = pref.getString("app_accent", "Blue Grey");
+        String statusBar = pref.getString("app_status", "Blue Grey");
+        String navigation = pref.getString("app_navigation", "Black");
+        decideTheme(theme, primary, accent, statusBar, navigation);
         Bundle bundle = getIntent().getExtras();
         setContentView(R.layout.activity_item);
         Toolbar toolbar = (Toolbar) findViewById(R.id.item_toolbar);
@@ -290,4 +299,13 @@ public class ItemActivity extends AppCompatActivity {
         return "<html><body>"+ content + "</body></html>";
     }
 
+    private void decideTheme(String themeName, String primary, String accent, String status, String navigation) {
+        ThemeChanger themeChanger = new ThemeChanger(this);
+        themeChanger.screenColor(themeName);
+        themeChanger.primaryColor(primary);
+        themeChanger.accentColor(accent);
+        themeChanger.statusColor(status);
+        themeChanger.navigationColor(navigation);
+        themeChanger.changeTheme();
+    }
 }

@@ -4,31 +4,42 @@ import android.app.Application;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
 import com.brianroadifer.mercuryfeed.Helpers.FeedItemAdapter;
+import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.Models.Item;
 import com.brianroadifer.mercuryfeed.R;
+import com.google.android.gms.auth.api.Auth;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.picasso.Picasso;
@@ -45,8 +56,14 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = pref.getString("app_screen", "Light");
+        String primary = pref.getString("app_primary", "Blue");
+        String accent = pref.getString("app_accent", "Blue");
+        String status = pref.getString("app_status", "Blue");
+        String navigation = pref.getString("app_navigation", "Black");
+        decideTheme(theme, primary, accent, status, navigation);
         user = fireAuth.getCurrentUser();
 
         if (user != null) {
@@ -129,21 +146,31 @@ public class MainActivity extends BaseActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options_menu, menu);
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        MenuItem addFeed = menu.findItem(R.id.action_one);
+        addFeed.setTitle("Add Feed");
+        addFeed.setIcon(R.drawable.ic_add_black_24dp);
+        MenuItem signOut = menu.findItem(R.id.action_two);
+        signOut.setTitle("Sign Out");
+        signOut.setIcon(R.drawable.ic_sign_out_black_24dp);
         return true;
     }
 
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()){
-//            case R.id.action_search:
-//                startActivity(new Intent(this, SearchResultsActivity.class));
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_one:
+                createDialog();
+                break;
+            case R.id.action_two:
+                fireAuth.signOut();
+                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+                SharedPreferences.Editor editor = pref.edit();
+                editor.clear();
+                editor.apply();
+                recreate();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     private void handleFeed(Feed feed){
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -151,5 +178,59 @@ public class MainActivity extends BaseActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(feedItemAdapter);
+    }
+
+    private void decideTheme(String themeName, String primary, String accent, String status, String navigation) {
+        ThemeChanger themeChanger = new ThemeChanger(this);
+        themeChanger.screenColor(themeName);
+        themeChanger.primaryColor(primary);
+        themeChanger.accentColor(accent);
+        themeChanger.statusColor(status);
+        themeChanger.navigationColor(navigation);
+        themeChanger.changeTheme();
+    }
+
+    private void createDialog() {
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View feedDialogView = factory.inflate(R.layout.add_feed_dialog, null);
+        final AlertDialog feedDialog = new AlertDialog.Builder(this).create();
+        final EditText addSearch = (EditText) feedDialogView.findViewById(R.id.feed_dialog_search);
+        final AutoCompleteTextView addTitle = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_title);
+        final AutoCompleteTextView addUrl = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_url);
+        final DatabaseHelper dh = new DatabaseHelper();
+
+        feedDialog.setView(feedDialogView);
+        feedDialogView.findViewById(R.id.tag_dialog_btn_yes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String feed = addSearch.getText().toString();
+                String title = addTitle.getText().toString();
+                String url = addUrl.getText().toString();
+                if((!feed.isEmpty() || feed.isEmpty())&& (title.isEmpty() || url.isEmpty())){
+                    Intent query = new Intent(getApplicationContext(), SearchResultsActivity.class);
+                    query.setAction(Intent.ACTION_SEARCH);
+                    query.putExtra(SearchManager.QUERY, feed);
+                    startActivity(query);
+                }else if(!title.isEmpty() && !url.isEmpty()){
+                    try{
+                        dh.writeFeedToDataBase(url, title);
+                        Toast.makeText(getApplicationContext(), "Added " + title, Toast.LENGTH_SHORT).show();
+                        finish();
+                    }catch (DatabaseException e){
+                        Toast.makeText(getApplicationContext(), "Cannot add " + title, Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+
+                }
+                feedDialog.dismiss();
+            }
+        });
+        feedDialogView.findViewById(R.id.tag_dialog_btn_no).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                feedDialog.dismiss();
+            }
+        });
+        feedDialog.show();
     }
 }

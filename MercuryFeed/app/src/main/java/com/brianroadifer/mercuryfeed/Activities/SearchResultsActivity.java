@@ -2,7 +2,9 @@ package com.brianroadifer.mercuryfeed.Activities;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.Window;
 
 import com.brianroadifer.mercuryfeed.Helpers.SearchAdapter;
+import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.firebase.database.DataSnapshot;
@@ -34,6 +37,13 @@ public class SearchResultsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = pref.getString("app_screen", "Light");
+        String primary = pref.getString("app_primary", "Blue Grey");
+        String accent = pref.getString("app_accent", "Blue Grey");
+        String status = pref.getString("app_status", "Blue Grey");
+        String navigation = pref.getString("app_navigation", "Black");
+        decideTheme(theme, primary, accent, status, navigation);
         setContentView(R.layout.activity_search_results);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -89,5 +99,15 @@ public class SearchResultsActivity extends AppCompatActivity {
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setAdapter(searchAdapter);
         }
+    }
+
+    private void decideTheme(String themeName, String primary, String accent, String status, String navigation) {
+        ThemeChanger themeChanger = new ThemeChanger(this);
+        themeChanger.screenColor(themeName);
+        themeChanger.primaryColor(primary);
+        themeChanger.accentColor(accent);
+        themeChanger.statusColor(status);
+        themeChanger.navigationColor(navigation);
+        themeChanger.changeTheme();
     }
 }

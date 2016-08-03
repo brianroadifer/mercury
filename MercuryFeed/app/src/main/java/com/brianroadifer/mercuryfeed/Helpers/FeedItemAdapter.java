@@ -1,21 +1,17 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
-import android.animation.Animator;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
-import android.widget.GridLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.brianroadifer.mercuryfeed.Activities.ItemActivity;
@@ -23,19 +19,13 @@ import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.Models.Item;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -61,6 +51,8 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final Item current = feed.Items.get(position);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        String themeName = pref.getString("app_screen", "Light");
         holder.Title.setText(current.title);
         try {
             holder.Info.setText(feed.Title + " / " + Difference(current.pubDate));
@@ -94,7 +86,6 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
                 Map<String,Object> read = new HashMap<>();
                 read.put("/feed_items/"+current.ID +"/user-read/"+ FirebaseAuth.getInstance().getCurrentUser().getUid().toString(),true);
                 feedItemDB.updateChildren(read);
-                Snackbar.make(v, "Read "+ current.title.substring(0,24), Snackbar.LENGTH_INDEFINITE).show();
                 v.setActivated(true);
                 v.setAlpha(0.5f);
                 context.startActivity(intent);
@@ -121,6 +112,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
                 return true;
             }
         });
+        decideTheme(holder, themeName);
     }
 
     @Override
@@ -139,6 +131,8 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         TextView Title, Content, Info;
         ImageView Thumbnail;
         CardView cardView;
+
+
         public ViewHolder(View itemView) {
             super(itemView);
             Title = (TextView)itemView.findViewById(R.id.news_title);
@@ -174,4 +168,44 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         }
 
     }
+
+    private void decideTheme(ViewHolder holder, String themeName) {
+        switch (themeName.toLowerCase()){
+            case "light":
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_light));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_light));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_light));
+                break;
+            case "dark":
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_dark);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_dark));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_dark));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_dark));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_dark));
+                break;
+            case "white":
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_white);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_white));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_white));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_white));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_white));
+                break;
+            case "black":
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_black);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_black));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_black));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_black));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_black));
+                break;
+            default:
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_light));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_light));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_light));
+        }
+    }
+
 }

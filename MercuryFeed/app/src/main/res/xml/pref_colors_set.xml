@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Mercury Feed Style">
+        <ListPreference
+            android:title="Screen Color"
+            android:dialogTitle="Screen Theme"
+            android:entries="@array/app_screen"
+            android:entryValues="@array/app_screen"
+            android:key="app_screen"
+            android:defaultValue="@string/app_screen_default"/>
+        <ListPreference
+            android:title="Primary Color"
+            android:dialogTitle="Primary Color"
+            android:entries="@array/app_primary"
+            android:entryValues="@array/app_primary"
+            android:key="app_primary"
+            android:defaultValue="@string/app_primary_default"/>
+        <ListPreference
+            android:title="Accent Color"
+            android:dialogTitle="Accent Color"
+            android:entries="@array/app_primary"
+            android:entryValues="@array/app_primary"
+            android:key="app_accent"
+            android:defaultValue="@string/app_primary_default" />
+        <ListPreference
+            android:title="Status Bar Color"
+            android:dialogTitle="Primary Color"
+            android:entries="@array/app_status"
+            android:entryValues="@array/app_status"
+            android:key="app_status"
+            android:defaultValue="@string/app_status_default" />
+        <ListPreference
+            android:title="Navigation Bar Color"
+            android:dialogTitle="Primary Color"
+            android:entries="@array/app_navigation"
+            android:entryValues="@array/app_navigation"
+            android:key="app_navigation"
+            android:defaultValue="@string/app_navigation_default" />
+
+
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Article Style">
+        <ListPreference
+            android:defaultValue="@string/article_themes_default"
+            android:entries="@array/article_themes"
+            android:entryValues="@array/article_themes"
+            android:key="article_theme"
+            android:title="Theme"
+            android:dialogTitle="Theme" />
+        <ListPreference
+            android:defaultValue="@string/article_themes_default"
+            android:entries="@array/article_themes"
+            android:entryValues="@array/article_themes"
+            android:key="article_just"
+            android:title="Justification"
+            android:dialogTitle="Justification" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="article_screen"
+            android:title="Full Screen" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Text Style"
+        android:summary="Change how the application looks">
+        <Preference
+            android:title="Text Font">
+            <intent></intent>
+        </Preference>
+        <Preference
+            android:title="Text Size">
+            <intent></intent>
+        </Preference>
+    </PreferenceCategory>
+
+</PreferenceScreen>

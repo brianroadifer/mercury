@@ -17,5 +17,8 @@
     <Preference android:title="@string/pref_title_system_sync_settings">
         <intent android:action="android.settings.SYNC_SETTINGS" />
     </Preference>
+    <Preference android:title="Delete Offline Articles">
+        <intent android:action="android.settings.SETTINGS"/>
+    </Preference>
 
 </PreferenceScreen>

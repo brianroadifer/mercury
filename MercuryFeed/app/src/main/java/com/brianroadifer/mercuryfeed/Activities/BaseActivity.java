@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
 import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
+import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.android.gms.auth.api.Auth;
@@ -74,14 +75,16 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = pref.getString("app_screen", "Light");
+        String primary = pref.getString("app_primary", "Blue");
+        String accent = pref.getString("app_accent", "Blue");
+        String status = pref.getString("app_status", "Blue");
+        String navigation = pref.getString("app_navigation", "Black");
+        decideTheme(theme, primary, accent, status, navigation);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        NavigationView nav = (NavigationView) findViewById(R.id.nav_view);
-        View  ll = nav.getHeaderView(0);
-        photo = (ImageView) ll.findViewById(R.id.user_img);
-        username = (TextView) ll.findViewById(R.id.user_name);
-        email = (TextView) ll.findViewById(R.id.user_email);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         mUsername = ANONYMOUS;
@@ -103,6 +106,10 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"userName:OnDataChange:"+ dataSnapshot.getValue().toString());
                 mUsername = dataSnapshot.getValue().toString();
+                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                View  ll = navigationView.getHeaderView(0);
+                username = (TextView) ll.findViewById(R.id.user_name);
+                username.setText(dataSnapshot.getValue().toString());
                 username.setText(mUsername);
             }
 
@@ -115,6 +122,9 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"email:OnDataChange:"+ dataSnapshot.getValue().toString());
                 mEmail = dataSnapshot.getValue().toString();
+                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                View  ll = navigationView.getHeaderView(0);
+                email = (TextView) ll.findViewById(R.id.user_email);
                 email.setText(mEmail);
             }
 
@@ -127,8 +137,11 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"profilePicture:OnDataChange:"+ dataSnapshot.getValue().toString());
+                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                View  ll = navigationView.getHeaderView(0);
+                photo = (ImageView) ll.findViewById(R.id.user_img);
                 mPhotoUrl = dataSnapshot.getValue().toString();
-                Picasso.with(getApplicationContext()).load(mPhotoUrl).into(photo);
+                Picasso.with(getApplicationContext()).load(mPhotoUrl).resize(128,128).into(photo);
             }
 
             @Override
@@ -190,6 +203,11 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                     intent.putExtra("ID", fd.ID);
                     item.setIntent(intent);
                 }
+                View  ll = navigationView.getHeaderView(0);
+                photo = (ImageView) ll.findViewById(R.id.user_img);
+                username = (TextView) ll.findViewById(R.id.user_name);
+                email = (TextView) ll.findViewById(R.id.user_email);
+
             }
 
             @Override
@@ -198,6 +216,16 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             }
 
         });
+    }
+
+    private void decideTheme(String themeName, String primary, String accent, String status, String navigation) {
+        ThemeChanger themeChanger = new ThemeChanger(this);
+        themeChanger.screenColor(themeName);
+        themeChanger.primaryColor(primary);
+        themeChanger.accentColor(accent);
+        themeChanger.statusColor(status);
+        themeChanger.navigationColor(navigation);
+        themeChanger.changeTheme();
     }
 
     @Override
@@ -215,17 +243,12 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle options_menu view item clicks here.
         int id = item.getItemId();
-        Log.d("setmeup", id +"");
         switch (id) {
             case R.id.nav_all:
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 break;
             case R.id.nav_settings:
                 startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
-                break;
-            case R.id.nav_add_feed:
-                startActivity(new Intent(this, AddFeedActivity.class));
-//                createDialog();
                 break;
             case R.id.nav_tags:
                 startActivity(new Intent(this, TagActivity.class));
@@ -252,48 +275,5 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:"+connectionResult);
-    }
-
-    private void createDialog() {
-        LayoutInflater factory = LayoutInflater.from(this);
-        final View feedDialogView = factory.inflate(R.layout.add_feed_dialog, null);
-        final AlertDialog feedDialog = new AlertDialog.Builder(this).create();
-        final AutoCompleteTextView addTitle = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_title);
-        final AutoCompleteTextView addUrl = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_url);
-        final DatabaseHelper dh = new DatabaseHelper();
-
-        feedDialog.setView(feedDialogView);
-        feedDialogView.findViewById(R.id.tag_dialog_btn_yes).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String title = addTitle.getText().toString();
-                String url = addUrl.getText().toString();
-                if ((title != null || !title.equals("") && (url != null || url.equals("")))) {
-                    try {
-                        dh.writeFeedToDataBase(url, title);
-                        Toast.makeText(getApplicationContext(), "Added " + title, Toast.LENGTH_SHORT).show();
-                        finish();
-                    } catch (DatabaseException e) {
-                        Toast.makeText(getApplicationContext(), "Cannot add " + title, Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
-
-                }
-                feedDialog.dismiss();
-            }
-        });
-        feedDialog.findViewById(R.id.tag_dialog_btn_no).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                feedDialog.dismiss();
-            }
-        });
-        feedDialog.findViewById(R.id.tag_dialog_btn_search).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), SearchResultsActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 }

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="articleBackground" format="color"/>
+    <attr name="articleTextColor" format="color"/>
+    <attr name="articleTextSize" format="dimension"/>
+
+    <attr name="appScreenColor" format="color"/>
+    <attr name="appPrimaryColor" format="color"/>
+    <attr name="appAccentColor" format="color"/>
+    <attr name="appTextColor" format="color"/>
+    <attr name="appNavigationColor" format="color"/>
+    <attr name="appTextSize" format="dimension"/>
+</resources>
