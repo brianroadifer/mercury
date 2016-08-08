@@ -2,13 +2,15 @@ package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Activities.ArticleItemActivity;
 import com.brianroadifer.mercuryfeed.Models.Article;
@@ -39,9 +41,11 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final Article current = articles.get(position);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        String themeName = pref.getString("app_screen", "Light");
         if(current != null){
             holder.Title.setText(current.Title);
-            holder.articleView.setOnClickListener(new View.OnClickListener() {
+            holder.cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(context, ArticleItemActivity.class);
@@ -49,10 +53,21 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
                     context.startActivity(intent);
                 }
             });
-            holder.articleView.setOnLongClickListener(new View.OnLongClickListener() {
+            holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    Toast.makeText(v.getContext(), "Press and hold to delete article", Toast.LENGTH_SHORT).show();
+                    ArticleHelper articleHelper = new ArticleHelper(context);
+                    if(v.isActivated()){
+                        Snackbar.make(v, "Saved " + current.Title.substring(0,24), Snackbar.LENGTH_LONG).show();
+                        v.setAlpha(1f);
+                        v.setActivated(false);
+                        articleHelper.SaveArticle(current);
+                    }else{
+                        Snackbar.make(v, "Deleted " + current.Title.substring(0,24), Snackbar.LENGTH_LONG).show();
+                        v.setAlpha(0.5f);
+                        v.setActivated(true);
+                        articleHelper.DeleteArticle(current.ID);
+                    }
                     return false;
                 }
             });
@@ -61,6 +76,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
         }else{
             holder.Title.setText("");
         }
+        decideTheme(holder, themeName);
     }
 
     @Override
@@ -74,11 +90,41 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView Title;
-        RelativeLayout articleView;
+        CardView cardView;
         public ViewHolder(View view){
             super(view);
             Title = (TextView) view.findViewById(R.id.row_article_title);
-            articleView = (RelativeLayout) view.findViewById(R.id.articleview);
+            cardView = (CardView) view.findViewById(R.id.articleview);
+        }
+    }
+
+    private void decideTheme(ViewHolder holder, String themeName) {
+
+        switch (themeName.toLowerCase()){
+            case "light":
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
+                break;
+            case "dark":
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_dark);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_dark));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.lightTextPrimary));
+                break;
+            case "white":
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_white);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_white));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
+                break;
+            case "black":
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_black);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_black));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.lightTextPrimary));
+                break;
+            default:
+                holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
+                holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
         }
     }
 }

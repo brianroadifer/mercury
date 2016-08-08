@@ -95,7 +95,7 @@ public class ArticleHelper {
      */
     public boolean DeleteArticle(String filename) {
         Log.w("Article:Delete", filename + " was successfully deleted");
-        return context.deleteFile(filename);
+        return context.deleteFile(FILENAME + filename);
 
     }
 

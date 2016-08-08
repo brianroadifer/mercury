@@ -1,7 +1,9 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -236,7 +238,7 @@ public class ArticleItemActivity extends AppCompatActivity {
     }
 
 
-    private void createDialog(final Article art){
+    private void createDialog(){
         LayoutInflater factory = LayoutInflater.from(this);
         final View tagDialogView = factory.inflate(R.layout.add_tag_dialog, null);
         final AlertDialog tagDialog = new AlertDialog.Builder(this).create();
@@ -253,7 +255,7 @@ public class ArticleItemActivity extends AppCompatActivity {
                 String tag = edit.getText().toString();
                 String[] tags = tag.replaceAll("^[,\\s]+", "").split("[,\\s]+");
                 List<String> articleTags = new ArrayList<>();
-                for(Tag arTag: art.Tags){
+                for(Tag arTag: article.Tags){
                     articleTags.add(arTag.Name);
                 }
                 for(String t: tags){
@@ -261,17 +263,11 @@ public class ArticleItemActivity extends AppCompatActivity {
                         Tag temp = new Tag();
                         temp.Name = t;
                         temp.ID = UUID.randomUUID().toString();
-                        art.Tags.add(temp);
+                        article.Tags.add(temp);
                     }
                 }
                 ArticleHelper articleHelper = new ArticleHelper(getApplicationContext());
-                articleHelper.SaveArticle(art);
-                tagDialog.dismiss();
-            }
-        });
-        tagDialogView.findViewById(R.id.tag_dialog_btn_no).setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
+                articleHelper.SaveArticle(article);
                 tagDialog.dismiss();
             }
         });
@@ -313,7 +309,7 @@ public class ArticleItemActivity extends AppCompatActivity {
                 shareItemURL();
                 break;
             case R.id.action_second:
-                createDialog(article);
+                createDialog();
                 break;
             case R.id.action_third:
                 if(isRead){
@@ -377,7 +373,11 @@ public class ArticleItemActivity extends AppCompatActivity {
     }
     public void openChrome(){
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-        builder.setToolbarColor(getResources().getColor(R.color.colorPrimary));
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = getTheme();
+        theme.resolveAttribute(R.attr.colorPrimary, typedValue, true);
+        int color = typedValue.data;
+        builder.setToolbarColor(color);
         CustomTabsIntent customTabsIntent = builder.build();
         customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(Intent.URI_ANDROID_APP_SCHEME + "//" + getPackageName()));
         customTabsIntent.launchUrl(this, Uri.parse(article.URL));

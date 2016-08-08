@@ -225,12 +225,6 @@ public class MainActivity extends BaseActivity {
                 feedDialog.dismiss();
             }
         });
-        feedDialogView.findViewById(R.id.tag_dialog_btn_no).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                feedDialog.dismiss();
-            }
-        });
         feedDialog.show();
     }
 }

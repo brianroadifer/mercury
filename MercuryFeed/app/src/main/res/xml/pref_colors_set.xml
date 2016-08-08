@@ -5,7 +5,6 @@
         <ListPreference
             android:title="Screen Color"
             android:dialogTitle="Screen Color"
-            android:dialogMessage="Change the screen color"
             android:entries="@array/app_screen"
             android:entryValues="@array/app_screen"
             android:key="app_screen"
@@ -13,7 +12,6 @@
         <ListPreference
             android:title="Primary Color"
             android:dialogTitle="Primary Color"
-            android:dialogMessage="Change the primary color"
             android:entries="@array/app_primary"
             android:entryValues="@array/app_primary"
             android:key="app_primary"
@@ -21,7 +19,6 @@
         <ListPreference
             android:title="Accent Color"
             android:dialogTitle="Accent Color"
-            android:dialogMessage="Change the accent color"
             android:entries="@array/app_primary"
             android:entryValues="@array/app_primary"
             android:key="app_accent"
@@ -29,7 +26,6 @@
         <ListPreference
             android:title="Status Bar Color"
             android:dialogTitle="Status Bar Color"
-            android:dialogMessage="Change the status bar color"
             android:entries="@array/app_status"
             android:entryValues="@array/app_status"
             android:key="app_status"
@@ -37,7 +33,6 @@
         <ListPreference
             android:title="Navigation Bar Color"
             android:dialogTitle="Navigation Bar Color"
-            android:dialogMessage="Change the navigation bar color"
             android:entries="@array/app_navigation"
             android:entryValues="@array/app_navigation"
             android:key="app_navigation"
@@ -79,18 +74,6 @@
             android:defaultValue="false"
             android:key="article_screen"
             android:title="Full Screen" />
-    </PreferenceCategory>
-    <PreferenceCategory
-        android:title="Text Style"
-        android:summary="Change how the application looks">
-        <Preference
-            android:title="Text Font">
-            <intent></intent>
-        </Preference>
-        <Preference
-            android:title="Text Size">
-            <intent></intent>
-        </Preference>
     </PreferenceCategory>
 
 </PreferenceScreen>

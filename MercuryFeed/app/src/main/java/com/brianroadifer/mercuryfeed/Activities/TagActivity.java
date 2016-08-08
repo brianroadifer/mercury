@@ -14,6 +14,8 @@ import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.MultiAutoCompleteTextView;
@@ -64,13 +66,6 @@ public class TagActivity extends BaseActivity {
 
         tagList.addAll(unq.values());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                createDialog();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -122,6 +117,31 @@ public class TagActivity extends BaseActivity {
         hashtagView.setData(tagList);
     }
 
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options_menu, menu);
+        MenuItem addFeed = menu.findItem(R.id.action_one);
+        addFeed.setTitle("Add Tags");
+        addFeed.setIcon(R.drawable.ic_label_black_48dp);
+        MenuItem signOut = menu.findItem(R.id.action_two);
+        signOut.setTitle("Delete Tags");
+        signOut.setIcon(R.drawable.ic_delete_white_48dp);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_one:
+                createDialog();
+                break;
+            case R.id.action_two:
+                TagHelper tagHelper = new TagHelper(this);
+                tagHelper.DeleteTags();
+                recreate();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
    private void createDialog(){
        LayoutInflater factory = LayoutInflater.from(this);
        final View tagDialogView = factory.inflate(R.layout.add_tag_dialog, null);
@@ -148,12 +168,7 @@ public class TagActivity extends BaseActivity {
                TagHelper tagHelper = new TagHelper(getApplicationContext());
                tagHelper.SaveTags(tagList);
                tagDialog.dismiss();
-           }
-       });
-       tagDialogView.findViewById(R.id.tag_dialog_btn_no).setOnClickListener(new View.OnClickListener(){
-           @Override
-           public void onClick(View v) {
-               tagDialog.dismiss();
+               recreate();
            }
        });
 

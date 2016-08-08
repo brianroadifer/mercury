@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:colorBackground"
     android:padding="@dimen/abc_dialog_padding_material">
 
     <TextView
@@ -9,6 +10,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Add Feed"
+        android:textColor="?android:attr/textColor"
         android:id="@+id/textView2" />
 
     <EditText
@@ -16,6 +18,7 @@
         android:layout_height="wrap_content"
         android:hint="Search"
         android:id="@+id/feed_dialog_search"
+        android:textColor="?android:attr/textColor"
         android:layout_gravity="center_horizontal"/>
 
     <AutoCompleteTextView
@@ -23,6 +26,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="Title"
+        android:textColor="?android:attr/textColor"
         android:id="@+id/feed_dialog_title"
         android:layout_gravity="center_horizontal" />
     <AutoCompleteTextView
@@ -30,6 +34,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="Url"
+        android:textColor="?android:attr/textColor"
         android:id="@+id/feed_dialog_url"
         android:layout_gravity="center_horizontal" />
 
@@ -39,24 +44,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Cancel"
-            android:id="@+id/tag_dialog_btn_no"
-            android:layout_gravity="right"
-            style="@style/Base.Widget.AppCompat.Button.Borderless"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:background="?attr/colorAccent" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
             android:text="Add Feed"
             android:id="@+id/tag_dialog_btn_yes"
             style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:textColor="?attr/colorAccent"
             android:layout_alignParentTop="true"
-            android:layout_toStartOf="@+id/tag_dialog_btn_no"
-            android:background="@color/accent_material_dark" />
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
 
 

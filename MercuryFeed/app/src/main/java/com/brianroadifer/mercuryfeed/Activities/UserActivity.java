@@ -59,9 +59,6 @@ public class UserActivity extends AppCompatActivity {
         email = (Button) findViewById(R.id.button2);
         pass = (Button) findViewById(R.id.button3);
 
-        String provider = firebaseUser.getProviders().get(0);
-        if(provider.equals())
-
         user.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

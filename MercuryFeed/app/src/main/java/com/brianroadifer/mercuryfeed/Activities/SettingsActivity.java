@@ -292,6 +292,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("article_just"));
             bindPreferenceSummaryToValue(findPreference("article_size"));
             bindPreferenceSummaryToValue(findPreference("article_family"));
+
             bindPreferenceSummaryToValue(findPreference("app_screen"));
             bindPreferenceSummaryToValue(findPreference("app_primary"));
             bindPreferenceSummaryToValue(findPreference("app_accent"));

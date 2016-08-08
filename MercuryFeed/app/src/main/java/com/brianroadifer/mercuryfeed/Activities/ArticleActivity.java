@@ -10,10 +10,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleAdapter;
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
+import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
 import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.R;
@@ -50,27 +53,6 @@ public class ArticleActivity extends AppCompatActivity {
         }
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Delete All Articles?", Snackbar.LENGTH_LONG).setAction("Delete", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        articleHelper.DeleteArticles();
-                        Snackbar.make(v, "Articles Deleted", Snackbar.LENGTH_LONG).show();
-                        recreate();
-                    }
-                }).show();
-            }
-        });
-
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-//                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-//        drawer.setDrawerListener(toggle);
-//        toggle.syncState();
-
         ArticleAdapter articleAdapter = new ArticleAdapter(articles, this);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.article_recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -79,6 +61,35 @@ public class ArticleActivity extends AppCompatActivity {
         }
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(articleAdapter);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options_menu, menu);
+        MenuItem addFeed = menu.findItem(R.id.action_one);
+        addFeed.setTitle("Delete Articles");
+        addFeed.setIcon(R.drawable.ic_delete_white_48dp);
+        MenuItem signOut = menu.findItem(R.id.action_two);
+        signOut.setVisible(false);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_one:
+                Snackbar.make(getCurrentFocus(), "Delete All Articles?", Snackbar.LENGTH_LONG).setAction("Delete", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ArticleHelper articleHelper = new ArticleHelper(getApplicationContext());
+                        articleHelper.DeleteArticles();
+                        Snackbar.make(v, "Articles Deleted", Snackbar.LENGTH_LONG).show();
+                        recreate();
+                    }
+                }).show();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void decideTheme(String themeName, String primary, String accent, String status, String navigation) {

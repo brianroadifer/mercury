@@ -3,6 +3,7 @@ package com.brianroadifer.mercuryfeed.Activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +21,7 @@ import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Tag;
 import com.brianroadifer.mercuryfeed.R;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,84 +38,89 @@ public class ArticleReceiverActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        String theme = pref.getString("app_screen", "Light");
-        String primary = pref.getString("app_primary", "Blue Grey");
-        String accent = pref.getString("app_accent", "Blue Grey");
-        String status = pref.getString("app_status", "Blue Grey");
-        String navigation = pref.getString("app_navigation", "Black");
-        decideTheme(theme, primary, accent, status, navigation);
-        setContentView(R.layout.activity_article_receiver);
-        title = (TextView) findViewById(R.id.share_title);
-        url = (TextView) findViewById(R.id.share_url);
-        tags = (MultiAutoCompleteTextView) findViewById(R.id.tag_maker);
-        save = (Button) findViewById(R.id.article_save_button);
+        if(FirebaseAuth.getInstance().getCurrentUser() != null) {
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.tag_suggestion, getAllTags());
-        tags.setAdapter(adapter);
-        tags.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
-        tags.setThreshold(1);
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+            String theme = pref.getString("app_screen", "Light");
+            String primary = pref.getString("app_primary", "Blue Grey");
+            String accent = pref.getString("app_accent", "Blue Grey");
+            String status = pref.getString("app_status", "Blue Grey");
+            String navigation = pref.getString("app_navigation", "Black");
+            decideTheme(theme, primary, accent, status, navigation);
+            setContentView(R.layout.activity_article_receiver);
+            title = (TextView) findViewById(R.id.share_title);
+            url = (TextView) findViewById(R.id.share_url);
+            tags = (MultiAutoCompleteTextView) findViewById(R.id.tag_maker);
+            save = (Button) findViewById(R.id.article_save_button);
 
-        Intent receivedIntent = getIntent();
-        String recievedAction = receivedIntent.getAction();
-        String recievedType = receivedIntent.getType();
-        final String receivedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
-        final String receievedTitle = receivedIntent.getStringExtra(Intent.EXTRA_SUBJECT);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.tag_suggestion, getAllTags());
+            tags.setAdapter(adapter);
+            tags.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+            tags.setThreshold(1);
 
-        for(String s:receivedIntent.getExtras().keySet()){
-            Log.d("DataReceiveActivity", "intent_extra_keys: "+ s);
-        }
+            Intent receivedIntent = getIntent();
+            String recievedAction = receivedIntent.getAction();
+            String recievedType = receivedIntent.getType();
+            final String receivedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
+            final String receievedTitle = receivedIntent.getStringExtra(Intent.EXTRA_SUBJECT);
+
+            for (String s : receivedIntent.getExtras().keySet()) {
+                Log.d("DataReceiveActivity", "intent_extra_keys: " + s);
+            }
 
 
-        if (recievedAction.equalsIgnoreCase(Intent.ACTION_SEND)){
-            if(recievedType.startsWith("text/")){
-                if(receievedTitle != null && receivedText != null){
-                    title.setText(receievedTitle);
-                    url.setText(receivedText);
+            if (recievedAction.equalsIgnoreCase(Intent.ACTION_SEND)) {
+                if (recievedType.startsWith("text/")) {
+                    if (receievedTitle != null && receivedText != null) {
+                        title.setText(receievedTitle);
+                        url.setText(receivedText);
 
-                    save.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            ReadArticle readArticle = new ReadArticle();
-                            Article article = new Article();
-                            try {
-                                article = readArticle.execute(receivedText).get();
+                        save.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                ReadArticle readArticle = new ReadArticle();
+                                Article article = new Article();
+                                try {
+                                    article = readArticle.execute(receivedText).get();
 
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                }
+
+                                article.Title = receievedTitle;
+                                ArticleHelper ah = new ArticleHelper(getApplicationContext());
+                                String tag = tags.getText().toString();
+                                String[] tags = tag.replaceAll("^[,\\s]+", "").split("[,\\s]+");
+                                List<Tag> tagList = new ArrayList<>();
+                                for (String t : tags) {
+                                    Tag temp = new Tag();
+                                    temp.Name = t;
+                                    temp.ID = UUID.randomUUID().toString();
+                                    tagList.add(temp);
+                                }
+                                article.Tags = tagList;
+                                ah.SaveArticle(article);
+                                Toast.makeText(getApplicationContext(), receievedTitle + " was saved", Toast.LENGTH_LONG).show();
+                                finish();
                             }
+                        });
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Sorry was unable to launch", Toast.LENGTH_LONG).show();
+                        finish();
+                    }
 
-                            article.Title = receievedTitle;
-                            ArticleHelper ah = new ArticleHelper(getApplicationContext());
-                            String tag = tags.getText().toString();
-                            String[] tags = tag.replaceAll("^[,\\s]+", "").split("[,\\s]+");
-                            List<Tag> tagList = new ArrayList<>();
-                            for(String t: tags){
-                                Tag temp = new Tag();
-                                temp.Name = t;
-                                temp.ID = UUID.randomUUID().toString();
-                                tagList.add(temp);
-                            }
-                            article.Tags = tagList;
-                            ah.SaveArticle(article);
-                            Toast.makeText(getApplicationContext(),receievedTitle + " was saved", Toast.LENGTH_LONG).show();
-                            finish();
-                        }
-                    });
-                }else {
-                    Toast.makeText(getApplicationContext(),"Sorry was unable to launch", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), recievedType + " is not supported", Toast.LENGTH_LONG).show();
                     finish();
                 }
 
-            }else{
-                Toast.makeText(getApplicationContext(), recievedType + " is not supported", Toast.LENGTH_LONG).show();
-                finish();
+            } else if (recievedAction.equalsIgnoreCase(Intent.ACTION_MAIN)) {
+
             }
-
-        }else if(recievedAction.equalsIgnoreCase(Intent.ACTION_MAIN)){
-
+        }else{
+            Toast.makeText(this, "Please Login to Save Articles", Toast.LENGTH_SHORT).show();
         }
 
     }

@@ -135,6 +135,8 @@
         <item>Monospace</item>
         <item>Serif</item>
         <item>Sans Serif</item>
+        <item>Lobster Two</item>
+        <item>Paprika</item>
     </string-array>
 
 
@@ -184,17 +186,6 @@
         <item>Black</item>
     </string-array>
 
-    <string name="app_font_default">Sans Serif</string>
-    <string-array name="app_font">
-        <item>Sans Serif</item>
-        <item>Serif</item>
-        <item></item>
-        <item>Cyan</item>
-        <item>Green</item>
-        <item>Lime</item>
-        <item>Yellow</item>
-        <item>White</item>
-        <item>Black</item>
-    </string-array>
-    <string name="title_activity_user">UserActivity</string>
+    <string name="title_activity_user">User Settings</string>
+
 </resources>

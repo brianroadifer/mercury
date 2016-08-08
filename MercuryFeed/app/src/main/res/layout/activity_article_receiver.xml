@@ -8,7 +8,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".Activities.ArticleReceiverActivity"
-    android:background="@color/colorPrimary"
+    android:background="?android:colorBackground"
     android:elevation="5dp">
 
 
@@ -19,6 +19,7 @@
         android:text="Article Title"
         android:id="@+id/share_title"
         android:lines="1"
+        android:textColor="?android:attr/textColor"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
@@ -30,6 +31,7 @@
         android:text="Article Title"
         android:id="@+id/share_url"
         android:lines="1"
+        android:textColor="?android:attr/textColor"
         android:layout_below="@+id/share_title"
         android:layout_alignParentLeft="true"
         android:layout_marginBottom="8dp" />
@@ -48,6 +50,7 @@
                     android:layout_height="wrap_content"
                     android:hint="Add Tags, separated by spaces/commas"
                     android:inputType="text"
+                    android:textColor="?android:attr/textColor"
                     android:maxLines="1"
                     android:singleLine="true"
                     android:layout_below="@+id/share_url"
@@ -60,18 +63,14 @@
         style="@style/Base.Widget.AppCompat.Button.Borderless"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save Article"
+        android:text="Save"
         android:id="@+id/article_save_button"
-        android:layout_below="@+id/share_tags"
-        android:textColor="@color/colorBackground"
-        android:background="@color/colorAccent"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/share_tags"
-        android:layout_alignEnd="@+id/share_tags"
+        android:textColor="?attr/colorAccent"
         android:clickable="false"
         android:focusable="false"
         android:focusableInTouchMode="false"
-        android:longClickable="false" />
+        android:longClickable="false"
+        android:layout_below="@+id/share_tags"
+        android:layout_alignEnd="@+id/share_tags" />
 
 </RelativeLayout>
