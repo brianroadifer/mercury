@@ -170,41 +170,42 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     }
 
     private void decideTheme(ViewHolder holder, String themeName) {
+
         switch (themeName.toLowerCase()){
             case "light":
                 holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
-                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_light));
-                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_light));
-                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_light));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.darkTextHint));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.darkTextSecondary));
                 break;
             case "dark":
                 holder.cardView.setCardBackgroundColor(R.color.app_screen_dark);
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_dark));
-                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_dark));
-                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_dark));
-                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_dark));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.lightTextPrimary));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.lightTextHint));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.lightTextSecondary));
                 break;
             case "white":
                 holder.cardView.setCardBackgroundColor(R.color.app_screen_white);
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_white));
-                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_white));
-                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_white));
-                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_white));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.darkTextHint));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.darkTextSecondary));
                 break;
             case "black":
                 holder.cardView.setCardBackgroundColor(R.color.app_screen_black);
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_black));
-                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_black));
-                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_black));
-                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_black));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.lightTextPrimary));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.lightTextHint));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.lightTextSecondary));
                 break;
             default:
                 holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
-                holder.Title.setTextColor(context.getResources().getColor(R.color.app_text_light));
-                holder.Info.setTextColor(context.getResources().getColor(R.color.app_text_light));
-                holder.Content.setTextColor(context.getResources().getColor(R.color.app_text_light));
+                holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
+                holder.Info.setTextColor(context.getResources().getColor(R.color.darkTextHint));
+                holder.Content.setTextColor(context.getResources().getColor(R.color.darkTextSecondary));
         }
     }
 

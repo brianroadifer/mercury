@@ -194,8 +194,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("example_text"));
-            bindPreferenceSummaryToValue(findPreference("example_list"));
+
+            Preference preference = findPreference("user_account");
+            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    startActivity(new Intent(getActivity(), UserActivity.class));
+                    return false;
+                }
+            });
         }
 
         @Override
@@ -282,6 +289,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("article_theme"));
+            bindPreferenceSummaryToValue(findPreference("article_just"));
+            bindPreferenceSummaryToValue(findPreference("article_size"));
+            bindPreferenceSummaryToValue(findPreference("article_family"));
             bindPreferenceSummaryToValue(findPreference("app_screen"));
             bindPreferenceSummaryToValue(findPreference("app_primary"));
             bindPreferenceSummaryToValue(findPreference("app_accent"));

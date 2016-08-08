@@ -24,6 +24,7 @@
         android:layout_height="wrap_content"
         android:textColor="?attr/articleTextColor"
         android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold"
         android:id="@+id/article_title"
         android:nestedScrollingEnabled="true" />
 
@@ -33,11 +34,11 @@
         android:id="@+id/article_content"
         android:layout_below="@+id/article_title"
         android:textColor="?attr/articleTextColor"
-        android:textColorHighlight="@color/colorAccent"
+        android:textColorHighlight="?attr/colorAccent"
         android:textColorLink="?attr/articleTextColor"
         android:linksClickable="true"
         android:textIsSelectable="true"
-        android:textSize="16dp" />
+        android:textSize="16sp" />
 
     <TextView
         android:layout_width="match_parent"

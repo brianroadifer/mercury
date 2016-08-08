@@ -2,6 +2,7 @@ package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Typeface;
 
 import com.brianroadifer.mercuryfeed.R;
 
@@ -92,6 +93,11 @@ public class ThemeChanger {
             this.status = STATUS;
         }
 
+    }
+
+    public Typeface selectTypeFace(String typeface){
+        Typeface type = Typeface.createFromAsset(context.getAssets(), "fonts/"+typeface+".ttf");
+        return type;
     }
 
 }

@@ -4,7 +4,8 @@
         android:title="Mercury Feed Style">
         <ListPreference
             android:title="Screen Color"
-            android:dialogTitle="Screen Theme"
+            android:dialogTitle="Screen Color"
+            android:dialogMessage="Change the screen color"
             android:entries="@array/app_screen"
             android:entryValues="@array/app_screen"
             android:key="app_screen"
@@ -12,6 +13,7 @@
         <ListPreference
             android:title="Primary Color"
             android:dialogTitle="Primary Color"
+            android:dialogMessage="Change the primary color"
             android:entries="@array/app_primary"
             android:entryValues="@array/app_primary"
             android:key="app_primary"
@@ -19,20 +21,23 @@
         <ListPreference
             android:title="Accent Color"
             android:dialogTitle="Accent Color"
+            android:dialogMessage="Change the accent color"
             android:entries="@array/app_primary"
             android:entryValues="@array/app_primary"
             android:key="app_accent"
             android:defaultValue="@string/app_primary_default" />
         <ListPreference
             android:title="Status Bar Color"
-            android:dialogTitle="Primary Color"
+            android:dialogTitle="Status Bar Color"
+            android:dialogMessage="Change the status bar color"
             android:entries="@array/app_status"
             android:entryValues="@array/app_status"
             android:key="app_status"
             android:defaultValue="@string/app_status_default" />
         <ListPreference
             android:title="Navigation Bar Color"
-            android:dialogTitle="Primary Color"
+            android:dialogTitle="Navigation Bar Color"
+            android:dialogMessage="Change the navigation bar color"
             android:entries="@array/app_navigation"
             android:entryValues="@array/app_navigation"
             android:key="app_navigation"
@@ -50,12 +55,26 @@
             android:title="Theme"
             android:dialogTitle="Theme" />
         <ListPreference
-            android:defaultValue="@string/article_themes_default"
-            android:entries="@array/article_themes"
-            android:entryValues="@array/article_themes"
+            android:defaultValue="@string/article_just_default"
+            android:entries="@array/article_just"
+            android:entryValues="@array/article_just"
             android:key="article_just"
             android:title="Justification"
             android:dialogTitle="Justification" />
+        <ListPreference
+            android:defaultValue="@string/article_family_default"
+            android:entries="@array/article_family"
+            android:entryValues="@array/article_family"
+            android:key="article_family"
+            android:title="Font Family"
+            android:dialogTitle="Font Family" />
+        <ListPreference
+            android:defaultValue="@string/article_size_default"
+            android:entries="@array/article_size"
+            android:entryValues="@array/article_size"
+            android:key="article_size"
+            android:title="Text Size"
+            android:dialogTitle="Text Size" />
         <SwitchPreference
             android:defaultValue="false"
             android:key="article_screen"

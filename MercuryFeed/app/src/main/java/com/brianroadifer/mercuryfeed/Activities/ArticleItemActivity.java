@@ -3,6 +3,7 @@ package com.brianroadifer.mercuryfeed.Activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -14,6 +15,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.SpannableString;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,6 +51,9 @@ public class ArticleItemActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
         String themeName = pref.getString("article_theme", "Light");
+        String justify = pref.getString("article_just", "Left");
+        String size = pref.getString("article_size", "Left");
+        String fontFamily = pref.getString("article_family", "Sans Serif");
         decideTheme(themeName);
         setContentView(R.layout.activity_article_item);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -97,6 +103,9 @@ public class ArticleItemActivity extends AppCompatActivity {
 
         content.setText(Html.fromHtml(article.Content, imageGetter, null));
         title.setText(article.Title);
+        decideJustify(justify,content,title);
+        decideSize(size,content,title);
+        decideFamily(fontFamily, content,title);
         final HashtagView tags = (HashtagView) findViewById(R.id.article_tag_view);
         if(!isRead){
             tags.addOnTagClickListener(new HashtagView.TagsClickListener() {
@@ -164,6 +173,65 @@ public class ArticleItemActivity extends AppCompatActivity {
                 break;
             default:
                 setTheme(R.style.Article_Light);
+        }
+    }
+    private void decideJustify(String justify, TextView... views) {
+        switch (justify){
+            case "Left":
+                for(TextView view: views) {
+                    view.setGravity(Gravity.LEFT);
+                }
+                break;
+            case "Right":
+                for(TextView view: views) {
+                    view.setGravity(Gravity.LEFT);
+                }
+                break;
+            default:
+                for(TextView view: views) {
+                    view.setGravity(Gravity.LEFT);
+                }
+        }
+    }
+    private void decideSize(String size, TextView... views) {
+        switch (size){
+            case "8":
+                views[0].setTextSize(TypedValue.COMPLEX_UNIT_SP, 8f);
+                views[1].setTextSize(TypedValue.COMPLEX_UNIT_SP,14f);
+                break;
+            case "12":
+                views[0].setTextSize(TypedValue.COMPLEX_UNIT_SP,12f);
+                views[1].setTextSize(TypedValue.COMPLEX_UNIT_SP,18f);
+                break;
+            case "16":
+                views[0].setTextSize(TypedValue.COMPLEX_UNIT_SP,16f);
+                views[1].setTextSize(TypedValue.COMPLEX_UNIT_SP,22f);
+                break;
+            case "20":
+                views[0].setTextSize(TypedValue.COMPLEX_UNIT_SP,20f);
+                views[1].setTextSize(TypedValue.COMPLEX_UNIT_SP,26f);
+                break;
+            case "24":
+                views[0].setTextSize(TypedValue.COMPLEX_UNIT_SP,24f);
+                views[1].setTextSize(TypedValue.COMPLEX_UNIT_SP,30f);
+                break;
+            case "28":
+                views[0].setTextSize(TypedValue.COMPLEX_UNIT_SP,28f);
+                views[1].setTextSize(TypedValue.COMPLEX_UNIT_SP,34f);
+                break;
+            default:
+                views[0].setTextSize(TypedValue.COMPLEX_UNIT_SP,12f);
+                views[1].setTextSize(TypedValue.COMPLEX_UNIT_SP,18f);
+        }
+    }
+
+    private void decideFamily(String family, TextView... views) {
+        family = family.toLowerCase();
+        family = family.replace(" ","_");
+
+        Typeface typeFace =Typeface.createFromAsset(getAssets(),"fonts/"+family+".ttf");
+        for(TextView view:views) {
+            view.setTypeface(typeFace);
         }
     }
 

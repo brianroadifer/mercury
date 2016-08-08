@@ -112,6 +112,32 @@
         <item>White</item>
         <item>Black</item>
     </string-array>
+
+    <string name="article_just_default">Left</string>
+    <string-array name="article_just">
+        <item>Left</item>
+        <item>Right</item>
+    </string-array>
+
+    <string name="article_size_default">12</string>
+    <string-array name="article_size">
+        <item>8</item>
+        <item>12</item>
+        <item>16</item>
+        <item>20</item>
+        <item>24</item>
+        <item>28</item>
+    </string-array>
+
+    <string name="article_family_default">Sans Serif</string>
+    <string-array name="article_family">
+        <item>Condensed</item>
+        <item>Monospace</item>
+        <item>Serif</item>
+        <item>Sans Serif</item>
+    </string-array>
+
+
     <string name="app_primary_default">Cyan</string>
     <string-array name="app_primary">
         <item>Red</item>
@@ -157,4 +183,18 @@
         <item>White</item>
         <item>Black</item>
     </string-array>
+
+    <string name="app_font_default">Sans Serif</string>
+    <string-array name="app_font">
+        <item>Sans Serif</item>
+        <item>Serif</item>
+        <item></item>
+        <item>Cyan</item>
+        <item>Green</item>
+        <item>Lime</item>
+        <item>Yellow</item>
+        <item>White</item>
+        <item>Black</item>
+    </string-array>
+    <string name="title_activity_user">UserActivity</string>
 </resources>

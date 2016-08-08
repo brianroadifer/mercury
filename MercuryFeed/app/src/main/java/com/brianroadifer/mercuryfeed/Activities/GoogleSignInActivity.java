@@ -3,13 +3,16 @@ package com.brianroadifer.mercuryfeed.Activities;
 import android.app.ProgressDialog;
 import android.net.Uri;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -49,7 +52,7 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
     private static String TAG="GoogleSignInActivity";
     private static final int RC_SIGN_IN = 12501;
     private SignInButton googleButton;
-    private Button signIn, register;
+    private Button signIn, register, reset;
     private TextView emailText, passwordText;
     private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth auth;
@@ -69,6 +72,9 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
         register.setOnClickListener(this);
         emailText = (EditText) findViewById(R.id.email);
         passwordText = (EditText) findViewById(R.id.password);
+
+        reset = (Button) findViewById(R.id.button4);
+        reset.setOnClickListener(this);
 
 
 
@@ -151,8 +157,9 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                 }else{
                     registerUser(email,password);
                 }
-
                 break;
+            case R.id.button4:
+                createResetDialog();
         }
     }
 
@@ -236,7 +243,7 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
         }
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount account){
+    private void firebaseAuthWithGoogle(final GoogleSignInAccount account){
         Log.d(TAG, "firebaseAuthWithGoogle:"+ account.getId());
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(),null);
         auth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -247,6 +254,18 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                     Log.w(TAG, "signInWithCredential", task.getException());
                     Snackbar.make(getCurrentFocus(), "Authentication Failed.", LENGTH_SHORT).show();
                 }else{
+                    String uid = task.getResult().getUser().getUid();
+                    DatabaseReference userDB = FirebaseDatabase.getInstance().getReference("users");
+
+                    String image = account.getPhotoUrl().toString();
+
+                    Map<String, Object> users = new HashMap<>();
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("email",account.getEmail());
+                    data.put("profile_picture", image);
+                    data.put("username", account.getDisplayName());
+                    users.put(uid,data);
+                    userDB.updateChildren(users);
                     startActivity(new Intent(GoogleSignInActivity.this, MainActivity.class));
                     finish();
                 }
@@ -301,5 +320,38 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
             sb.append(String.format("%02x", b & 0xff));
         }
         return sb.toString();
+    }
+
+    private void createResetDialog(){
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View dialogView = factory.inflate(R.layout.change_username_dialog, null);
+        final AlertDialog dialog = new AlertDialog.Builder(this).create();
+        final AutoCompleteTextView change = (AutoCompleteTextView) dialogView.findViewById(R.id.editText);
+        TextView textView = (TextView)findViewById(R.id.textView);
+//        textView.setText("Change Email");
+        change.setHint("Email");
+
+
+        dialog.setView(dialogView);
+        dialogView.findViewById(R.id.tag_dialog_btn_yes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final String text = change.getText().toString();
+                if(isVaildEmail(text)){
+                    auth.sendPasswordResetEmail(text).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Log.d(TAG, "sendPasswordResetEmail"+task.isSuccessful());
+                        }
+                    });
+                    dialog.dismiss();
+                }else{
+                    change.setError("Invalid Email Format");
+                }
+
+
+            }
+        });
+        dialog.show();
     }
 }

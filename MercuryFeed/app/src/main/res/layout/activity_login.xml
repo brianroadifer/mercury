@@ -114,5 +114,15 @@
         android:layout_toRightOf="@+id/sign_button"
         android:layout_toEndOf="@+id/sign_button" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset Password"
+        android:id="@+id/button4"
+        style="@style/Base.Widget.AppCompat.Button.Borderless"
+        android:textColor="?attr/colorAccent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
+
 
 </RelativeLayout>
