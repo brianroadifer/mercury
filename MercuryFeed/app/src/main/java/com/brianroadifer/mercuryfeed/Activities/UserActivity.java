@@ -1,12 +1,11 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
-import android.app.SearchManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,31 +13,25 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
+import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
+import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.auth.api.model.ProviderUserInfo;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseException;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,7 +39,6 @@ public class UserActivity extends AppCompatActivity {
     private static final String TAG = "UserActivity";
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
-    Button user,email,pass;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,28 +47,28 @@ public class UserActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        user = (Button) findViewById(R.id.button);
-        email = (Button) findViewById(R.id.button2);
-        pass = (Button) findViewById(R.id.button3);
 
-        user.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        String action = getIntent().getAction();
+        if(action == null){
+            action = "NULL";
+        }else{
+            hideWindow();
+        }
+        switch (action){
+            case "USERNAME":
                 createUserDialog();
-            }
-        });
-        email.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                break;
+            case "EMAIL":
                 createEmailDialog();
-            }
-        });
-        pass.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                break;
+            case "PASSWORD":
                 createPassDialog();
-            }
-        });
+                break;
+            case "DELETE":
+                createDeleteDialog();
+                break;
+        }
+
 
     }
 
@@ -105,6 +97,13 @@ public class UserActivity extends AppCompatActivity {
                     });
                 }
                 dialog.dismiss();
+                finish();
+            }
+        });
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                finish();
             }
         });
         dialog.show();
@@ -159,6 +158,12 @@ public class UserActivity extends AppCompatActivity {
 
             }
         });
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                finish();
+            }
+        });
         dialog.show();
     }
     private void createPassDialog() {
@@ -185,6 +190,7 @@ public class UserActivity extends AppCompatActivity {
                         }
                     });
                     dialog.dismiss();
+                    finish();
                 }else{
                     change.setError("Invalid Password Format");
                 }
@@ -192,33 +198,57 @@ public class UserActivity extends AppCompatActivity {
 
             }
         });
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                finish();
+            }
+        });
         dialog.show();
     }
 
     private void createDeleteDialog() {
         LayoutInflater factory = LayoutInflater.from(this);
-        final View dialogView = factory.inflate(R.layout.change_username_dialog, null);
+        final View dialogView = factory.inflate(R.layout.delete_account_dialog, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).create();
-        final AutoCompleteTextView change = (AutoCompleteTextView) dialogView.findViewById(R.id.editText);
-        TextView textView = (TextView)findViewById(R.id.textView);
-        change.setHint("Password");
-        change.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
-
 
         dialog.setView(dialogView);
         dialogView.findViewById(R.id.tag_dialog_btn_yes).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                    firebaseAuth.signOut();
                     firebaseUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             Log.d(TAG, "delete:"+ task.isSuccessful());
                             if(task.isSuccessful()){
                                 FirebaseDatabase.getInstance().getReference("users").child(firebaseUser.getUid()).removeValue();
+                                File cache = getCacheDir();
+                                TagHelper th = new TagHelper(getApplicationContext());
+                                ArticleHelper ah = new ArticleHelper(getApplicationContext());
+                                th.DeleteTags();
+                                ah.DeleteArticles();
+                                deleteDir(cache);
+                                startActivity( new Intent(getApplicationContext(), MainActivity.class));
+                                finish();
                             }
                         }
                     });
-                    dialog.dismiss();
+
+                dialog.dismiss();
+                finish();
+            }
+        });
+        dialogView.findViewById(R.id.tag_dialog_btn_no).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                finish();
             }
         });
         dialog.show();
@@ -253,6 +283,30 @@ public class UserActivity extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    private void hideWindow(){
+        CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.user_view);
+        coordinatorLayout.setVisibility(View.GONE);
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.dimAmount = 1f;
+    }
+
+    private boolean deleteDir(File dir){
+        if(dir != null && dir.isDirectory()){
+            String[] kids = dir.list();
+            for(String kid : kids){
+                boolean success = deleteDir(new File(dir, kid));
+                if(!success){
+                    return false;
+                }
+            }
+            return dir.delete();
+        }else if(dir != null && dir.isFile()){
+            return dir.delete();
+        }else {
+            return false;
+        }
     }
 
 }

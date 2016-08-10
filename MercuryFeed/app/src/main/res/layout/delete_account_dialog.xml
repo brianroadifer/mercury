@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/abc_dialog_padding_material">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Delete Account"
+        android:id="@+id/textView" />
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:hint="Are you sure you want to delete your account?"
+        android:id="@+id/text2" />
+    <RelativeLayout android:layout_height="wrap_content" android:layout_width="match_parent">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Delete"
+        android:id="@+id/tag_dialog_btn_yes"
+        style="@style/Base.Widget.AppCompat.Button.Borderless"
+        android:textColor="@android:color/holo_red_light"
+        android:layout_gravity="right"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:id="@+id/tag_dialog_btn_no"
+        style="@style/Base.Widget.AppCompat.Button.Borderless"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/tag_dialog_btn_yes" />
+    </RelativeLayout>
+
+</LinearLayout>

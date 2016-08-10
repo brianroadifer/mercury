@@ -111,6 +111,7 @@
         <activity
             android:name=".Activities.SettingsActivity"
             android:label="@string/title_activity_settings"
+            android:theme="@style/Theme.AppCompat.Light"
             android:parentActivityName=".Activities.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -119,7 +120,7 @@
         <activity
             android:name=".Activities.UserActivity"
             android:label="@string/title_activity_user"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme.Transparent">
             <intent-filter>
                 <action android:name="com.brianroadifer.mercuryfeed.Activities.UserActvity"/>
                 <category android:name="android.intent.category.DEFAULT"/>

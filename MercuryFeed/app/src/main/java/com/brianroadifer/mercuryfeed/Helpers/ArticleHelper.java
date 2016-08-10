@@ -1,7 +1,11 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Models.Article;
 
@@ -25,9 +29,13 @@ public class ArticleHelper {
     FileInputStream fis;
     ObjectInputStream is;
     Context context;
+//    SharedPreferences preferences;
+    String storage = "Internal";
 
     public ArticleHelper(Context context) {
         this.context = context;
+//        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+//        storage = preferences.getString("offline_storage", "Internal");
     }
 
     /**
@@ -36,16 +44,43 @@ public class ArticleHelper {
      * @param article Article that is saved to the device
      */
     public void SaveArticle(Article article) {
-        try {
-            this.fos = this.context.openFileOutput(FILENAME + article.ID, Context.MODE_PRIVATE);
-            this.os = new ObjectOutputStream(this.fos);
-            this.os.writeObject(article);
-            this.os.close();
-            this.fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(storage.equalsIgnoreCase("Internal")) {
+            try {
+                this.fos = this.context.openFileOutput(FILENAME + article.ID, Context.MODE_PRIVATE);
+                this.os = new ObjectOutputStream(this.fos);
+                this.os.writeObject(article);
+                this.os.close();
+                this.fos.close();
+                Log.w("Article:Save", article.Title + " was saved successfully");
+            } catch (IOException e) {
+                Toast.makeText(context, "Could not save article, check storage space", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+        }else if(storage.equalsIgnoreCase("External")){
+            if(isExternalStroageWritable()) {
+                File root = Environment.getExternalStorageDirectory();
+                File dir = new File(root.getAbsolutePath() + "/mercury_feed/data/articles");
+                if (dir.mkdirs()) {
+                    File file = new File(dir, FILENAME + article.ID);
+                    try {
+                        this.fos = this.context.openFileOutput(file.getAbsolutePath(), Context.MODE_PRIVATE);
+                        this.os = new ObjectOutputStream(this.fos);
+                        this.os.writeObject(article);
+                        this.os.close();
+                        this.fos.close();
+                        Log.w("Article:Save", article.Title + " was saved successfully");
+                    } catch (IOException e) {
+                        Toast.makeText(context, "Could not save article, check storage space", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                }
+            }else{
+                storage = "Internal";
+                SaveArticle(article);
+            }
+
         }
-        Log.w("Article:Save", article.Title + " was saved successfully");
+
     }
 
     public void SaveArticles(List<Article> articles) {
@@ -111,5 +146,14 @@ public class ArticleHelper {
             }
         }
 
+    }
+
+    private boolean isExternalStroageWritable(){
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equalsIgnoreCase(state);
+    }
+    private boolean isExternalStroageReadable(){
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equalsIgnoreCase(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equalsIgnoreCase(state);
     }
 }

@@ -23,6 +23,8 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
@@ -56,10 +58,12 @@ public class ArticleItemActivity extends AppCompatActivity {
         String justify = pref.getString("article_just", "Left");
         String size = pref.getString("article_size", "Left");
         String fontFamily = pref.getString("article_family", "Sans Serif");
+        boolean full = pref.getBoolean("article_full", false);
         decideTheme(themeName);
         setContentView(R.layout.activity_article_item);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setFullScreen(full);
         Bundle bundle = getIntent().getExtras();
         String URL;
         if(bundle.containsKey("Article")){
@@ -82,6 +86,7 @@ public class ArticleItemActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+
 
         TextView title = (TextView) findViewById(R.id.article_title);
 
@@ -381,6 +386,16 @@ public class ArticleItemActivity extends AppCompatActivity {
         CustomTabsIntent customTabsIntent = builder.build();
         customTabsIntent.intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(Intent.URI_ANDROID_APP_SCHEME + "//" + getPackageName()));
         customTabsIntent.launchUrl(this, Uri.parse(article.URL));
+    }
+
+    private void setFullScreen(boolean fullScreen){
+        WindowManager.LayoutParams attrs = getWindow().getAttributes();
+        if(fullScreen){
+            attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        }else {
+            attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        }
+        getWindow().setAttributes(attrs);
     }
 
 }

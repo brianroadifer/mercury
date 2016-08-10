@@ -14,17 +14,37 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.support.v7.app.AlertDialog;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.view.View;
+import android.widget.AutoCompleteTextView;
+import android.widget.TextView;
 
+import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.FirebaseDatabase;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -174,7 +194,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName)
                 || DataSyncPreferenceFragment.class.getName().equals(fragmentName)
-                || NotificationPreferenceFragment.class.getName().equals(fragmentName)
                 || ThemePreferenceFragment.class.getName().equals(fragmentName);
     }
 
@@ -190,49 +209,53 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_general);
             setHasOptionsMenu(true);
 
+
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
 
-            Preference preference = findPreference("user_account");
-            preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            Preference username = findPreference("user_name");
+            username.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    startActivity(new Intent(getActivity(), UserActivity.class));
+                    Intent intent = new Intent(getActivity(), UserActivity.class);
+                    intent.setAction("USERNAME");
+                    startActivity(intent);
                     return false;
                 }
             });
-        }
+            Preference email = findPreference("user_email");
+            email.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(getActivity(), UserActivity.class);
+                    intent.setAction("EMAIL");
+                    startActivity(intent);
+                    return false;
+                }
+            });
+            Preference password = findPreference("user_password");
+            password.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(getActivity(), UserActivity.class);
+                    intent.setAction("PASSWORD");
+                    startActivity(intent);
+                    return false;
+                }
+            });
+            Preference delete = findPreference("user_delete");
+            delete.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(getActivity(), UserActivity.class);
+                    intent.setAction("DELETE");
+                    startActivity(intent);
+                    return false;
+                }
+            });
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-    /**
-     * This fragment shows notification preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class NotificationPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_notification);
-            setHasOptionsMenu(true);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
         }
 
         @Override
@@ -262,7 +285,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+            bindPreferenceSummaryToValue(findPreference("offline_storage"));
+            bindPreferenceSummaryToValue(findPreference("offline_limit"));
+            findPreference("offline_delete").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    ArticleHelper articleHelper = new ArticleHelper(preference.getContext());
+                    articleHelper.DeleteArticles();
+                    Snackbar.make(getActivity().getCurrentFocus(), "Deleted Saved Articles", Snackbar.LENGTH_SHORT).show();
+                    return false;
+                }
+            });
         }
 
         @Override
@@ -298,6 +331,39 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("app_accent"));
             bindPreferenceSummaryToValue(findPreference("app_navigation"));
             bindPreferenceSummaryToValue(findPreference("app_status"));
+
+            Preference reset = findPreference("reset_default");
+            reset.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString("app_screen", "Light");
+                        editor.putString("app_primary", "Blue");
+                        editor.putString("app_accent", "Blue");
+                        editor.putString("app_status", "Black");
+                        editor.putString("app_navigation", "Black");
+                        editor.putString("article_theme", "Light");
+                        editor.putString("article_just", "Left");
+                        editor.putString("article_size", "12");
+                        editor.putString("article_family", "Sans Serif");
+                        editor.putBoolean("article_full", false);
+                        editor.apply();
+
+                    bindPreferenceSummaryToValue(findPreference("article_theme"));
+                    bindPreferenceSummaryToValue(findPreference("article_just"));
+                    bindPreferenceSummaryToValue(findPreference("article_size"));
+                    bindPreferenceSummaryToValue(findPreference("article_family"));
+
+                    bindPreferenceSummaryToValue(findPreference("app_screen"));
+                    bindPreferenceSummaryToValue(findPreference("app_primary"));
+                    bindPreferenceSummaryToValue(findPreference("app_accent"));
+                    bindPreferenceSummaryToValue(findPreference("app_navigation"));
+                    bindPreferenceSummaryToValue(findPreference("app_status"));
+                    return false;
+                }
+            });
         }
 
         @Override
@@ -310,4 +376,5 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return super.onOptionsItemSelected(item);
         }
     }
+
 }

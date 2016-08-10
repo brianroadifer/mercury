@@ -1,6 +1,8 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.brianroadifer.mercuryfeed.Models.Tag;

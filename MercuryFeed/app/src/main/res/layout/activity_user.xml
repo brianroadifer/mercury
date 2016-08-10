@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.brianroadifer.mercuryfeed.Activities.UserActivity">
+    android:id="@+id/user_view"
+    tools:context=".Activities.UserActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

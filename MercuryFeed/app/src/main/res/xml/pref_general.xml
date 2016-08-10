@@ -2,9 +2,24 @@
 
 
     <Preference
-        android:title="Account Information"
-        android:key="user_account"
-        android:summary="Change your username, email, and password">
+        android:title="Username"
+        android:key="user_name"
+        android:summary="Change your username">
+    </Preference>
+    <Preference
+        android:title="Email"
+        android:key="user_email"
+        android:summary="Change your email">
+    </Preference>
+    <Preference
+        android:title="Password"
+        android:key="user_password"
+        android:summary="Change your password">
+    </Preference>
+    <Preference
+        android:title="Delete Account"
+        android:key="user_delete"
+        android:summary="Delete your account">
     </Preference>
 
 

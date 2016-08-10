@@ -71,9 +71,12 @@
             android:title="Text Size"
             android:dialogTitle="Text Size" />
         <SwitchPreference
-            android:defaultValue="false"
-            android:key="article_screen"
+            android:key="article_full"
             android:title="Full Screen" />
     </PreferenceCategory>
+    <Preference
+        android:title="Reset Theme"
+        android:summary="Reset theme to defaults"
+        android:key="reset_default"/>
 
 </PreferenceScreen>
