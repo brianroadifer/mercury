@@ -52,10 +52,10 @@
         android:layout_alignParentLeft="true"
         android:linksClickable="true"
         android:layout_marginBottom="16dp"
-        android:textColorHighlight="@color/colorAccent"
+        android:textColorHighlight="?android:colorAccent"
         android:textSize="16dp"
         android:textIsSelectable="true"
-        android:textColorLink="@color/colorPrimary"
+        android:textColorLink="?android:colorPrimary"
         android:elegantTextHeight="true" />
 
 </RelativeLayout>

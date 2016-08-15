@@ -4,20 +4,20 @@
     <group
         android:id="@+id/nav_feed_group">
         <item
-            android:icon="@drawable/ic_home_black_48dp"
+            android:icon="@drawable/ic_home"
             android:id="@+id/nav_all"
             android:title="All" />
     </group>
 
     <item android:title="Articles"
-        android:icon="@drawable/ic_bookmark_white_48dp"
+        android:icon="@drawable/ic_articles"
         android:id="@+id/nav_articles"/>
     <item android:title="Tags"
-        android:icon="@drawable/ic_label_black_48dp"
+        android:icon="@drawable/ic_label"
         android:id="@+id/nav_tags"/>
     <item
         android:id="@+id/nav_settings"
-        android:icon="@drawable/ic_settings_black_48dp"
+        android:icon="@drawable/ic_settings"
         android:title="Settings" />
 
 </menu>

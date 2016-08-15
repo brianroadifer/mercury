@@ -16,6 +16,7 @@ import com.brianroadifer.mercuryfeed.Activities.ArticleItemActivity;
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.R;
 
+import java.io.File;
 import java.util.List;
 
 
@@ -66,7 +67,12 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
                         Snackbar.make(v, "Deleted " + current.Title.substring(0,24), Snackbar.LENGTH_LONG).show();
                         v.setAlpha(0.5f);
                         v.setActivated(true);
-                        articleHelper.DeleteArticle(current.ID);
+                        File file = new File(context.getFilesDir(), ArticleHelper.FILENAME + current.ID);
+                        articleHelper.DeleteArticle(file);
+                        if(articleHelper.isExternalStorageReadable() && articleHelper.isExternalStorageWritable()){
+                            file = new File(context.getExternalFilesDir(null), ArticleHelper.FILENAME + current.ID);
+                            articleHelper.DeleteArticle(file);
+                        }
                     }
                     return false;
                 }
@@ -102,27 +108,27 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
 
         switch (themeName.toLowerCase()){
             case "light":
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
                 break;
             case "dark":
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_dark);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_dark));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_dark));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.lightTextPrimary));
                 break;
             case "white":
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_white);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_white));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_white));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
                 break;
             case "black":
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_black);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_black));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_black));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.lightTextPrimary));
                 break;
             default:
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
         }

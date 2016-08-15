@@ -2,19 +2,16 @@ package com.brianroadifer.mercuryfeed.Activities;
 
 import android.app.Application;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,9 +20,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
@@ -34,7 +28,6 @@ import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.Models.Item;
 import com.brianroadifer.mercuryfeed.R;
-import com.google.android.gms.auth.api.Auth;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -42,10 +35,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.leakcanary.LeakCanary;
-import com.squareup.picasso.Picasso;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
@@ -109,8 +100,14 @@ public class MainActivity extends BaseActivity {
                             item.link = (String) dataSnapshot.child(snap.getKey()).child("link").getValue();
                             item.thumbnailUrl = (String) dataSnapshot.child(snap.getKey()).child("thumbnail").getValue();
                             long unix = (long) dataSnapshot.child(snap.getKey()).child("published").getValue();
-                            item.pubDate = new Date(unix);
+                            item.timestamp = new Timestamp(unix * 1000L);
+                            Log.d(TAG, "onDataChange:"+item.timestamp.toString());
                             if (id.equalsIgnoreCase(feed.ID)) {
+                                for(Feed fd: feeds){
+                                    if(fd.ID.equalsIgnoreCase(id)){
+                                        feed.Title = fd.Title;
+                                    }
+                                }
                                 if (item != null) {
                                     setTitle(feed.Title);
                                     feed.Items.add(item);
@@ -188,6 +185,14 @@ public class MainActivity extends BaseActivity {
         themeChanger.statusColor(status);
         themeChanger.navigationColor(navigation);
         themeChanger.changeTheme();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu menu = navigationView.getMenu();
+        menu.getItem(0).setIcon(R.drawable.ic_home);
+        menu.getItem(1).setIcon(R.drawable.ic_articles);
+        menu.getItem(2).setIcon(R.drawable.ic_label);
+        menu.getItem(3).setIcon(R.drawable.ic_settings);
+
     }
 
     private void createDialog() {

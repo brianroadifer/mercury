@@ -90,7 +90,7 @@
 //                        else if(current.getNodeName().equalsIgnoreCase("description") || current.getNodeName().equalsIgnoreCase("content")){
 //                            item.setDescription(current.getTextContent());
 //                        }
-//                        else if(current.getNodeName().equalsIgnoreCase("pubDate") || current.getNodeName().equalsIgnoreCase("published")) {
+//                        else if(current.getNodeName().equalsIgnoreCase("timestamp") || current.getNodeName().equalsIgnoreCase("published")) {
 //                            item.setPubDate(current.getTextContent());
 //                        }
 //                        else if(current.getNodeName().equalsIgnoreCase("media:thumbnail") || current.getNodeName().equalsIgnoreCase("media:content")) {

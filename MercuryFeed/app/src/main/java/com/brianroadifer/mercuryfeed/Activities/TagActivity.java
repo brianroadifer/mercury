@@ -2,17 +2,13 @@ package com.brianroadifer.mercuryfeed.Activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -121,7 +117,7 @@ public class TagActivity extends BaseActivity {
         getMenuInflater().inflate(R.menu.options_menu, menu);
         MenuItem addFeed = menu.findItem(R.id.action_one);
         addFeed.setTitle("Add Tags");
-        addFeed.setIcon(R.drawable.ic_label_black_48dp);
+        addFeed.setIcon(R.drawable.ic_label);
         MenuItem signOut = menu.findItem(R.id.action_two);
         signOut.setTitle("Delete Tags");
         signOut.setIcon(R.drawable.ic_delete_white_48dp);

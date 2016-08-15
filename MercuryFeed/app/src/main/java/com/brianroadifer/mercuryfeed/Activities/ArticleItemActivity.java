@@ -1,6 +1,5 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -23,7 +22,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.MultiAutoCompleteTextView;
@@ -38,6 +36,7 @@ import com.brianroadifer.mercuryfeed.R;
 import com.greenfrvr.hashtagview.HashtagView;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +47,6 @@ import java.util.concurrent.ExecutionException;
 
 public class ArticleItemActivity extends AppCompatActivity {
     boolean isRead= false;
-
     Article article;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,25 +159,25 @@ public class ArticleItemActivity extends AppCompatActivity {
     private void decideTheme(String themeName) {
         switch (themeName.toLowerCase()){
             case "light":
-                setTheme(R.style.Article_Light);
+                getTheme().applyStyle(R.style.Article_Light, true);
                 break;
             case "dark":
-                setTheme(R.style.Article_Dark);
+                getTheme().applyStyle(R.style.Article_Dark, true);
                 break;
             case "sepia":
-                setTheme(R.style.Article_Sepia);
+                getTheme().applyStyle(R.style.Article_Sepia, true);
                 break;
             case "green":
-                setTheme(R.style.Article_Green);
+                getTheme().applyStyle(R.style.Article_Green, true);
                 break;
             case "white":
-                setTheme(R.style.Article_White);
+                getTheme().applyStyle(R.style.Article_White, true);
                 break;
             case "black":
-                setTheme(R.style.Article_Black);
+                getTheme().applyStyle(R.style.Article_Black, true);
                 break;
             default:
-                setTheme(R.style.Article_Light);
+                getTheme().applyStyle(R.style.Article_Light, true);
         }
     }
     private void decideJustify(String justify, TextView... views) {
@@ -273,7 +271,12 @@ public class ArticleItemActivity extends AppCompatActivity {
                 }
                 ArticleHelper articleHelper = new ArticleHelper(getApplicationContext());
                 articleHelper.SaveArticle(article);
+                Intent intent = new Intent(ArticleItemActivity.this, ArticleItemActivity.class);
+                intent.putExtra("Article", article);
+                startActivity(intent);
                 tagDialog.dismiss();
+                finish();
+
             }
         });
 
@@ -337,15 +340,15 @@ public class ArticleItemActivity extends AppCompatActivity {
 
         if(isRead){
             MenuItem delete = menu.findItem(R.id.action_third);
-            delete.setIcon(R.drawable.ic_bookmark_white_48dp);
+            delete.setIcon(R.drawable.ic_articles);
             delete.setTitle("Save Article");
             MenuItem tags = menu.findItem(R.id.action_second);
-            tags.setIcon(R.drawable.ic_label_white_48dp);
+            tags.setIcon(R.drawable.ic_label);
             tags.setTitle("Add Tags");
             tags.setVisible(false);
         }else{
             MenuItem tags = menu.findItem(R.id.action_second);
-            tags.setIcon(R.drawable.ic_label_white_48dp);
+            tags.setIcon(R.drawable.ic_label);
             tags.setTitle("Add Tags");
             tags.setVisible(true);
             MenuItem delete = menu.findItem(R.id.action_third);
@@ -374,7 +377,13 @@ public class ArticleItemActivity extends AppCompatActivity {
     }
     public void deleteArticle(){
         ArticleHelper articleHelper = new ArticleHelper(this);
-        articleHelper.DeleteArticle(ArticleHelper.FILENAME + article.ID);
+        File file = new File(getFilesDir(), ArticleHelper.FILENAME + article.ID);
+        articleHelper.DeleteArticle(file);
+        if(articleHelper.isExternalStorageReadable() && articleHelper.isExternalStorageWritable()){
+            file = new File(getExternalFilesDir(null), ArticleHelper.FILENAME + article.ID);
+            articleHelper.DeleteArticle(file);
+        }
+        finish();
     }
     public void openChrome(){
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();

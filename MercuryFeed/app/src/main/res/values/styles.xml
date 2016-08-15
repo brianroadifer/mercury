@@ -13,6 +13,7 @@
         <item name="android:colorForeground">@color/colorForeground</item>
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="windowActionModeOverlay">true</item>
+        <item name="actionModeBackground">@drawable/action_mode_back</item>
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 

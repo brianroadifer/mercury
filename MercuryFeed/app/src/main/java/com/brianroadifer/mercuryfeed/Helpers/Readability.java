@@ -1,5 +1,8 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
+import android.app.Notification;
+import android.support.v4.app.NotificationCompat;
+
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Metadata;
 

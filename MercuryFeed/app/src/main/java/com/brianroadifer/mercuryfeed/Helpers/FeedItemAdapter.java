@@ -23,18 +23,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Brian Roadifer on 5/28/2016.
- */
 public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHolder> {
     DatabaseReference feedItemDB = FirebaseDatabase.getInstance().getReference();
     Feed feed;
     Context context;
+    SharedPreferences preferences;
 
     public FeedItemAdapter(Feed feed, Context context) {
         this.feed = feed;
@@ -50,14 +49,15 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Item current = feed.Items.get(position);
+        final Item current = feed.ItemsDesending().get(position);
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
         String themeName = pref.getString("app_screen", "Light");
         holder.Title.setText(current.title);
         try {
-            holder.Info.setText(feed.Title + " / " + Difference(current.pubDate));
+            holder.Info.setText("by " + current.author + " : " + Difference(current.timestamp));
+
         }catch (NullPointerException ne){
-            holder.Info.setText(feed.Title + " / by " + current.author);
+            holder.Info.setText("");
         }
         if(current.description != null){
             holder.Content.setText(Html.fromHtml(current.description));
@@ -78,7 +78,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("Link", current.link);
                 intent.putExtra("Author", current.author);
-                intent.putExtra("Date", current.pubDate);
+                intent.putExtra("Date", current.timestamp);
                 intent.putExtra("Image", current.thumbnailUrl);
                 intent.putExtra("Description", current.description);
                 intent.putExtra("Title", current.title);
@@ -97,13 +97,21 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             public boolean onLongClick(View v) {
                 Map<String,Object> read = new HashMap<>();
                 read.put("/feed_items/"+current.ID +"/user-read/"+ FirebaseAuth.getInstance().getCurrentUser().getUid().toString(),!v.isActivated());
-
+                Snackbar snackbar;
                 if(v.isActivated()){
-                    Snackbar.make(v, "Marked " + current.title.substring(0,24) + "... as unread", Snackbar.LENGTH_LONG).show();
+                    snackbar = Snackbar.make(v, "Marked as unread", Snackbar.LENGTH_LONG);
+                    View sv = snackbar.getView();
+                    TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                    stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
+                    snackbar.show();
                     v.setAlpha(1f);
                     v.setActivated(false);
                 }else{
-                    Snackbar.make(v, "Marked " + current.title.substring(0,24) + "... as read", Snackbar.LENGTH_LONG).show();
+                    snackbar = Snackbar.make(v, "Marked as read", Snackbar.LENGTH_LONG);
+                    View sv = snackbar.getView();
+                    TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                    stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
+                    snackbar.show();
                     v.setAlpha(0.5f);
                     v.setActivated(true);
                 }
@@ -143,9 +151,9 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
         }
     }
-    public String Difference(Date pastDate){
+    public String Difference(Timestamp timestamp){
         Date current = Calendar.getInstance().getTime();
-        long difference = current.getTime() - pastDate.getTime();
+        long difference = current.getTime() - timestamp.getTime();
         int days = (int) (difference/(1000*60*60*24));
         if(days > 1){
             return days + " days ago";
@@ -154,17 +162,23 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         }
         int hours = (int) (difference/(1000*60*60));
         if(hours > 1){
-            return hours + " hours ago";
+            return hours + " hrs ago";
         }else if(hours == 1){
-            return hours + " hour ago";
+            return hours + " hr ago";
         }
         int min = (int) (difference/(1000*60));
         if(min > 1){
-            return min + " minutes ago";
+            return min + " mins ago";
         }else if(min == 1){
-            return min + " minute ago";
-        }else{
-            return "Few seconds ago";
+            return min + " min ago";
+        }
+        int sec = (int)(difference/(1000));
+        if(sec > 1){
+            return sec + " secs ago";
+        }else if(sec == 1){
+            return sec + " sec ago";
+        }else {
+            return "just now";
         }
 
     }
@@ -173,39 +187,44 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
         switch (themeName.toLowerCase()){
             case "light":
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
                 holder.Info.setTextColor(context.getResources().getColor(R.color.darkTextHint));
                 holder.Content.setTextColor(context.getResources().getColor(R.color.darkTextSecondary));
+                holder.Content.setLinkTextColor(context.getResources().getColor(R.color.darkTextSecondary));
                 break;
             case "dark":
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_dark);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_dark));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_dark));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.lightTextPrimary));
                 holder.Info.setTextColor(context.getResources().getColor(R.color.lightTextHint));
                 holder.Content.setTextColor(context.getResources().getColor(R.color.lightTextSecondary));
+                holder.Content.setLinkTextColor(context.getResources().getColor(R.color.lightTextSecondary));
                 break;
             case "white":
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_white);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_white));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_white));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
                 holder.Info.setTextColor(context.getResources().getColor(R.color.darkTextHint));
                 holder.Content.setTextColor(context.getResources().getColor(R.color.darkTextSecondary));
+                holder.Content.setLinkTextColor(context.getResources().getColor(R.color.darkTextSecondary));
                 break;
             case "black":
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_black);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_black));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_black));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.lightTextPrimary));
                 holder.Info.setTextColor(context.getResources().getColor(R.color.lightTextHint));
                 holder.Content.setTextColor(context.getResources().getColor(R.color.lightTextSecondary));
+                holder.Content.setLinkTextColor(context.getResources().getColor(R.color.lightTextSecondary));
                 break;
             default:
-                holder.cardView.setCardBackgroundColor(R.color.app_screen_light);
+                holder.cardView.setCardBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
                 holder.cardView.setBackgroundColor(context.getResources().getColor(R.color.app_screen_light));
                 holder.Title.setTextColor(context.getResources().getColor(R.color.darkTextPrimary));
                 holder.Info.setTextColor(context.getResources().getColor(R.color.darkTextHint));
                 holder.Content.setTextColor(context.getResources().getColor(R.color.darkTextSecondary));
+                holder.Content.setLinkTextColor(context.getResources().getColor(R.color.darkTextSecondary));
         }
     }
 

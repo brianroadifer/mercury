@@ -5,24 +5,17 @@
         android:title="@string/action_share"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_share_white_48dp"
-        android:actionProviderClass="android.widget.ShareActionProvider">
-    </item>
+        android:actionProviderClass="android.widget.ShareActionProvider"/>
     <item android:id="@+id/action_second"
-        android:title="@string/action_share"
+        android:title="Read Article"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_share_white_48dp"
-        android:actionProviderClass="android.widget.ShareActionProvider">
-    </item>
+        android:icon="@drawable/ic_chrome_reader_mode_white_48dp"/>
     <item android:id="@+id/action_third"
-        android:title="@string/action_share"
+        android:title="Save Article"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_share_white_48dp"
-        android:actionProviderClass="android.widget.ShareActionProvider">
-    </item>
+        android:icon="@drawable/ic_articles"/>
     <item android:id="@+id/action_browser"
         android:title="In App Chrome"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_browser_48dp"
-        android:actionProviderClass="android.widget.ShareActionProvider">
-    </item>
+        android:icon="@drawable/ic_browser_48dp"/>
 </menu>

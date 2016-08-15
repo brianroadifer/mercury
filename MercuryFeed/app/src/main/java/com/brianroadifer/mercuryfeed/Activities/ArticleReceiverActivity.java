@@ -1,12 +1,19 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -37,6 +44,7 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +102,7 @@ public class ArticleReceiverActivity extends AppCompatActivity {
 
     }
     private void createDialog(final String receievedTitle, final String receivedText){
-        LayoutInflater factory = LayoutInflater.from(this);
+        final LayoutInflater factory = LayoutInflater.from(this);
         final View dialogView = factory.inflate(R.layout.add_article_dialog, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).create();
         TextView title = (TextView) dialogView.findViewById(R.id.share_title);
@@ -113,29 +121,62 @@ public class ArticleReceiverActivity extends AppCompatActivity {
         dialogView.findViewById(R.id.article_save_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ReadArticle readArticle = new ReadArticle();
-                Article article = new Article();
-                try {
-                    article = readArticle.execute(receivedText).get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-                article.Title = receievedTitle;
-                ArticleHelper ah = new ArticleHelper(getApplicationContext());
-                String tag = tags.getText().toString();
-                String[] tags = tag.replaceAll("^[,\\s]+", "").split("[,\\s]+");
-                List<Tag> tagList = new ArrayList<>();
-                for (String t : tags) {
-                    Tag temp = new Tag();
-                    temp.Name = t;
-                    temp.ID = UUID.randomUUID().toString();
-                    tagList.add(temp);
-                }
-                article.Tags = tagList;
-                ah.SaveArticle(article);
-                Toast.makeText(getApplicationContext(), receievedTitle + " was saved", Toast.LENGTH_LONG).show();
+
+                final ReadArticle readArticle = new ReadArticle();
+
+                final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                final NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
+                builder.setSmallIcon(R.drawable.ic_stat_download);
+                Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_download_icon);
+                builder.setLargeIcon(bm);
+                builder.setContentTitle("Downloading Article");
+                builder.setContentText(receievedTitle);
+                builder.setGroup("GROUP_ARTICLE_DOWNLOAD");
+                builder.setGroupSummary(true);
+                builder.setOngoing(true);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Article article = new Article();
+                        long time = new Date().getTime();
+                        String tmpStr = String.valueOf(time);
+                        String last5Str = tmpStr.substring(tmpStr.length() -6);
+                        int notificationId = Integer.valueOf(last5Str);
+                        readArticle.execute(receivedText);
+                        manager.notify(notificationId, builder.build());
+
+                        try {
+                            article = readArticle.get();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        }
+
+                        article.Title = receievedTitle;
+                        ArticleHelper ah = new ArticleHelper(getApplicationContext());
+                        String tag = tags.getText().toString();
+                        String[] tags = tag.replaceAll("^[,\\s]+", "").split("[,\\s]+");
+                        List<Tag> tagList = new ArrayList<>();
+                        for (String t : tags) {
+                            Tag temp = new Tag();
+                            temp.Name = t;
+                            temp.ID = UUID.randomUUID().toString();
+                            tagList.add(temp);
+                        }
+                        article.Tags = tagList;
+                        ah.SaveArticle(article);
+                        Intent intent = new Intent(getApplicationContext(), ArticleItemActivity.class);
+                        intent.putExtra("Article", article);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                        builder.setOngoing(false);
+                        builder.setContentIntent(pendingIntent);
+                        builder.setContentTitle("Download complete");
+                        builder.setAutoCancel(true);
+                        manager.notify(notificationId, builder.build());
+                    }
+                }).start();
                 dialog.dismiss();
             }
         });
