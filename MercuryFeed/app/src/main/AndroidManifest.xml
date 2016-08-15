@@ -107,12 +107,11 @@
                 <data android:mimeType="text/*" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".Activities.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:theme="@style/Theme.AppCompat.Light"
-            android:parentActivityName=".Activities.MainActivity">
+            android:parentActivityName=".Activities.MainActivity"
+            android:theme="@style/Theme.AppCompat.Light">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.brianroadifer.mercuryfeed.Activities.MainActivity" />
@@ -122,8 +121,9 @@
             android:label="@string/title_activity_user"
             android:theme="@style/AppTheme.Transparent">
             <intent-filter>
-                <action android:name="com.brianroadifer.mercuryfeed.Activities.UserActvity"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="com.brianroadifer.mercuryfeed.Activities.UserActvity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
     </application>

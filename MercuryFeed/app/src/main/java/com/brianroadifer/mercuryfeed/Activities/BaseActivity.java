@@ -67,8 +67,8 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
     DatabaseReference userFeedsDB;
     public List<Feed> feeds = new ArrayList<>();
     public List<String> subscribed = new ArrayList<>();
-    ArticleHelper articleHelper = new ArticleHelper(this);
-    TagHelper tagHelper = new TagHelper(this);
+    ArticleHelper articleHelper;
+    TagHelper tagHelper;
     ImageView photo;
     TextView username, email;
 
@@ -85,6 +85,8 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        articleHelper = new ArticleHelper(this);
+        tagHelper = new TagHelper(this);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         mUsername = ANONYMOUS;

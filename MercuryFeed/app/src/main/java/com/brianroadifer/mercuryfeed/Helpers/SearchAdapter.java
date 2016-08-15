@@ -58,8 +58,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    Log.w(TAG, "subscribed:" + child.getKey() + ":value:"+child.getValue());
-                    subscribed.put(child.getKey(), (boolean) child.getValue());
+                    Log.w(TAG, "subscribed:" + child.getKey() + ":value:"+dataSnapshot.child(child.getKey()).getValue());
+                    subscribed.put(child.getKey(), (boolean) dataSnapshot.child(child.getKey()).getValue());
                 }
 
                 if (current != null) {
@@ -78,7 +78,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         Map<String, Object>  maps = new HashMap<>();
                         maps.put(current.ID, isChecked);
-                        reference.updateChildren(maps);
+                        if(isChecked){
+                            reference.updateChildren(maps);
+                        }else{
+                            reference.child(current.ID).removeValue();
+                        }
                         holder.Subscribe.setActivated(isChecked);
                         String text = isChecked ? "Unsubscribe":"Subscribe";
                         holder.Subscribe.setText(text);

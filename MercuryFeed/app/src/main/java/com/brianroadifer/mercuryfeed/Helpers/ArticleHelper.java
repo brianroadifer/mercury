@@ -2,8 +2,12 @@ package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.OpenableColumns;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,19 +27,19 @@ import java.util.List;
  */
 public class ArticleHelper {
 
-    public final static String FILENAME = "meurcury_article_";
+    public final static String FILENAME = "mercury_article_";
     FileOutputStream fos;
     ObjectOutputStream os;
     FileInputStream fis;
     ObjectInputStream is;
     Context context;
-//    SharedPreferences preferences;
+    SharedPreferences preferences;
     String storage = "Internal";
 
     public ArticleHelper(Context context) {
         this.context = context;
-//        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
-//        storage = preferences.getString("offline_storage", "Internal");
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
+        this.storage = this.preferences.getString("offline_storage", "Internal");
     }
 
     /**
@@ -57,28 +61,30 @@ public class ArticleHelper {
                 e.printStackTrace();
             }
         }else if(storage.equalsIgnoreCase("External")){
-            if(isExternalStroageWritable()) {
-                File root = Environment.getExternalStorageDirectory();
-                File dir = new File(root.getAbsolutePath() + "/mercury_feed/data/articles");
-                if (dir.mkdirs()) {
-                    File file = new File(dir, FILENAME + article.ID);
+            if(isExternalStorageWritable() && isExternalStorageReadable()) {
+                    File file = new File(this.context.getExternalFilesDir(null)+File.separator+ FILENAME + article.ID);
+                    String path = file.getAbsolutePath();
                     try {
-                        this.fos = this.context.openFileOutput(file.getAbsolutePath(), Context.MODE_PRIVATE);
+                        this.fos = new FileOutputStream(file);
                         this.os = new ObjectOutputStream(this.fos);
                         this.os.writeObject(article);
                         this.os.close();
                         this.fos.close();
                         Log.w("Article:Save", article.Title + " was saved successfully");
+                        Log.w("Article:Save", path);
+
                     } catch (IOException e) {
                         Toast.makeText(context, "Could not save article, check storage space", Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
-                }
             }else{
                 storage = "Internal";
                 SaveArticle(article);
             }
 
+        }else{
+            storage = "Internal";
+            SaveArticle(article);
         }
 
     }
@@ -89,10 +95,10 @@ public class ArticleHelper {
         }
     }
 
-    public Article LoadArticle(String fileName) {
-        Log.w("Article:Load", "Loading " + fileName);
+    public Article LoadArticleInternal(File file) {
+        Log.w("Article:Load", "Loading " + file.getName());
         try {
-            this.fis = this.context.openFileInput(fileName);
+            this.fis = this.context.openFileInput(file.getName());
             this.is = new ObjectInputStream(this.fis);
             Article article = (Article) this.is.readObject();
             this.is.close();
@@ -100,7 +106,22 @@ public class ArticleHelper {
             Log.w("Article:Load", article.Title + "was successfully loaded");
             return article;
         } catch (IOException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+    public Article LoadArticleExternal(File file){
+        Log.w("Article:Load", "Loading " + file.getName());
+        try {
+            this.fis = new FileInputStream(file);
+            this.is = new ObjectInputStream(this.fis);
+            Article article = (Article) this.is.readObject();
+            this.is.close();
+            this.fis.close();
+            Log.w("Article:Load", article.Title + "was successfully loaded");
+            return article;
+        } catch (IOException e) {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -109,28 +130,45 @@ public class ArticleHelper {
 
     public List<Article> LoadArticles() {
         List<Article> articles = new ArrayList<>();
-        File[] files = this.context.getFilesDir().listFiles();
-        for (File file : files) {
+        File[] internal = this.context.getFilesDir().listFiles();
+        File[] external = null;
+        if(isExternalStorageReadable() && isExternalStorageWritable()){
+            external = this.context.getExternalFilesDir(null).listFiles();
+        }
+        for (File file : internal) {
             if (file.isFile() && file.getName().contains(FILENAME)) {
-                Article article = LoadArticle(file.getName());
+                Article article = LoadArticleInternal(file);
                 if (article != null) {
                     articles.add(article);
                 }
 
             }
         }
+        if(external != null){
+            for (File file: external)
+            {
+                if (file.isFile() && file.getName().contains(FILENAME)) {
+                    Article article = LoadArticleExternal(file);
+                    if (article != null) {
+                        articles.add(article);
+                    }
+
+                }
+            }
+        }
+
         return articles;
     }
 
     /**
      * Delete a specific article
      *
-     * @param filename file that will be deleted
+     * @param file file that will be deleted
      * @return
      */
-    public boolean DeleteArticle(String filename) {
-        Log.w("Article:Delete", filename + " was successfully deleted");
-        return context.deleteFile(FILENAME + filename);
+    public boolean DeleteArticle(File file) {
+        Log.w("Article:Delete", file.getName() + " was successfully deleted");
+        return file.delete();
 
     }
 
@@ -140,20 +178,52 @@ public class ArticleHelper {
     public void DeleteArticles() {
         File[] files = context.getFilesDir().listFiles();
         for (File file : files) {
-            if (file.isFile()) {
-                Log.w("Article:Delete", file.getName() + " was successfully deleted");
-                context.deleteFile(file.getName());
+            if (file.isFile() && file.getName().contains(FILENAME)) {
+                DeleteArticle(file);
+            }
+        }
+        if(isExternalStorageWritable() && isExternalStorageReadable()){
+            File[] external = context.getExternalFilesDir(null).listFiles();
+            for (File file : external) {
+                if (file.isFile() && file.getName().contains(FILENAME)) {
+                    DeleteArticle(file);
+                }
             }
         }
 
+
+    }
+    public long getOfflineArticleSize(){
+        long offlineSize = 0;
+        File[] internal = this.context.getFilesDir().listFiles();
+        File[] external = null;
+        if(isExternalStorageReadable() && isExternalStorageWritable()){
+            external = this.context.getExternalFilesDir(null).listFiles();
+        }
+        for (File file : internal) {
+            if (file.isFile() && file.getName().contains(FILENAME)) {
+                offlineSize += file.length();
+            }
+        }
+        if(external != null){
+            for (File file: external)
+            {
+                if (file.isFile() && file.getName().contains(FILENAME)) {
+                    offlineSize += file.length();
+
+                }
+            }
+        }
+        return offlineSize;
     }
 
-    private boolean isExternalStroageWritable(){
+    public boolean isExternalStorageWritable(){
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equalsIgnoreCase(state);
     }
-    private boolean isExternalStroageReadable(){
+    public boolean isExternalStorageReadable(){
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equalsIgnoreCase(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equalsIgnoreCase(state);
     }
+
 }

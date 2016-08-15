@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * Created by Brian Roadifer on 6/27/2016.
  */
-public class ReadArticle extends AsyncTask<String, Void, Article> {
+public class ReadArticle extends AsyncTask<String, Integer, Article> {
     Article article = new Article();
     String url;
 
@@ -30,6 +30,11 @@ public class ReadArticle extends AsyncTask<String, Void, Article> {
     }
 
     @Override
+    protected void onProgressUpdate(Integer...progress){
+
+    }
+
+    @Override
     protected void onPreExecute() {
         super.onPreExecute();
     }
@@ -41,25 +46,6 @@ public class ReadArticle extends AsyncTask<String, Void, Article> {
 
     public void ProcessHTML(Document data) {
         if(data != null){
-//            Element body = data.body();
-//            Log.d("JSwa", "Title [" + data.title()+"]");
-//            article.ID = UUID.randomUUID().toString();
-//            article.Title = data.title();
-//            Elements articles = body.getElementsByTag("article");
-//            for (Element article: articles) {
-//                Log.d("JSwa", "Article [" + article.toString()+"]");
-//            }
-//            Element articlez = articles.get(0);
-//            article.Content = articlez.html();
-//            Elements h1s = articlez.getElementsByTag("h1");
-//            for (Element h1: h1s) {
-//                Log.d("JSwa", "H1 [" + h1.html()+"]");
-//            }
-//            Elements lis = articlez.getElementsByTag("li");
-//            for (Element li: lis) {
-//                Log.d("JSwa", "LI [" + li.html()+"]");
-//            }
-//            article.Tags = new ArrayList<>();
             try {
                 Readability readability = new Readability(data){
                     @Override

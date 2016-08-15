@@ -10,13 +10,11 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Add Tag(s)"
-        android:textColor="?android:textColor"
         android:id="@+id/textView2" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?android:textColor"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Tags are seperated by a (,)"
         android:id="@+id/textView3" />
@@ -25,7 +23,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:textColor="?android:textColor"
         android:id="@+id/tag_dialog_edit"
         android:layout_gravity="center_horizontal" />
     <RelativeLayout android:layout_height="wrap_content" android:layout_width="match_parent">
