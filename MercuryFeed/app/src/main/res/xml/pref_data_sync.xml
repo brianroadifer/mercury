@@ -8,21 +8,24 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
         android:title="Offline Storage Location" />
-    <EditTextPreference
+    <com.brianroadifer.mercuryfeed.Helpers.NumberPickerPreference
         android:key="offline_limit"
+        android:defaultValue="@string/offline_limit_default_value"
         android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:title="Offline Storage Limit" />
+        android:positiveButtonText="Set"
+        android:title="Offline Storage Limit"
+        android:dialogMessage="Set the number of Article to Save Offline.\nHint: Values "
+        android:summary="Number of Articles to Save Offline"/>
 
     <Preference android:title="Delete Offline Articles" android:key="offline_delete" android:summary="Remove articles saved to device."/>
 
-    <!--<ListPreference-->
-        <!--android:defaultValue="-1"-->
-        <!--android:key="offline_time"-->
-        <!--android:entries="@array/pref_offline_time_title"-->
-        <!--android:entryValues="@array/pref_offline_time_values"-->
-        <!--android:negativeButtonText="@null"-->
-        <!--android:positiveButtonText="@null"-->
-        <!--android:title="Time to Delete" />-->
+    <ListPreference
+        android:defaultValue="-1"
+        android:key="offline_time"
+        android:entries="@array/pref_offline_time_title"
+        android:entryValues="@array/pref_offline_time_values"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="Time to Delete" />
 
 </PreferenceScreen>

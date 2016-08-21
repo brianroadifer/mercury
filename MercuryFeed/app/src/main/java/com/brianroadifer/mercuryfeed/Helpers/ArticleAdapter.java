@@ -46,41 +46,10 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
         String themeName = pref.getString("app_screen", "Light");
         if(current != null){
             holder.Title.setText(current.Title);
-            holder.cardView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(context, ArticleItemActivity.class);
-                    intent.putExtra("Article", current);
-                    context.startActivity(intent);
-                }
-            });
-            holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    ArticleHelper articleHelper = new ArticleHelper(context);
-                    if(v.isActivated()){
-                        Snackbar.make(v, "Saved " + current.Title.substring(0,24), Snackbar.LENGTH_LONG).show();
-                        v.setAlpha(1f);
-                        v.setActivated(false);
-                        articleHelper.SaveArticle(current);
-                    }else{
-                        Snackbar.make(v, "Deleted " + current.Title.substring(0,24), Snackbar.LENGTH_LONG).show();
-                        v.setAlpha(0.5f);
-                        v.setActivated(true);
-                        File file = new File(context.getFilesDir(), ArticleHelper.FILENAME + current.ID);
-                        articleHelper.DeleteArticle(file);
-                        if(articleHelper.isExternalStorageReadable() && articleHelper.isExternalStorageWritable()){
-                            file = new File(context.getExternalFilesDir(null), ArticleHelper.FILENAME + current.ID);
-                            articleHelper.DeleteArticle(file);
-                        }
-                    }
-                    return false;
-                }
-            });
         }else if(current == null && articles.size() == 1){
             holder.Title.setText("Articles Related Not Found");
         }else{
-            holder.Title.setText("");
+            holder.cardView.setVisibility(View.GONE);
         }
         decideTheme(holder, themeName);
     }
@@ -94,13 +63,55 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
         }
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         TextView Title;
         CardView cardView;
         public ViewHolder(View view){
             super(view);
             Title = (TextView) view.findViewById(R.id.row_article_title);
             cardView = (CardView) view.findViewById(R.id.articleview);
+            view.setOnClickListener(this);
+            view.setOnLongClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            Article article = articles.get(getAdapterPosition());
+            Intent intent = new Intent(context, ArticleItemActivity.class);
+            intent.putExtra("Article", article);
+            context.startActivity(intent);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            Article article = articles.get(getAdapterPosition());
+            ArticleHelper articleHelper = new ArticleHelper(context);
+            Snackbar snackbar;
+            if (v.isActivated()) {
+                snackbar = Snackbar.make(v, "Saved Article", Snackbar.LENGTH_LONG);
+                View sv = snackbar.getView();
+                TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
+                snackbar.show();
+                v.setAlpha(1f);
+                v.setActivated(false);
+                articleHelper.SaveArticle(article);
+            } else {
+                snackbar = Snackbar.make(v, "Deleted Article", Snackbar.LENGTH_LONG);
+                View sv = snackbar.getView();
+                TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
+                snackbar.show();
+                v.setAlpha(0.5f);
+                v.setActivated(true);
+                File file = new File(context.getFilesDir(), ArticleHelper.FILENAME + article.ID);
+                articleHelper.DeleteArticle(file);
+                if(ArticleHelper.isExternalStorageReadable() && ArticleHelper.isExternalStorageWritable()){
+                    file = new File(context.getExternalFilesDir(null), ArticleHelper.FILENAME + article.ID);
+                    articleHelper.DeleteArticle(file);
+                }
+            }
+            return false;
         }
     }
 

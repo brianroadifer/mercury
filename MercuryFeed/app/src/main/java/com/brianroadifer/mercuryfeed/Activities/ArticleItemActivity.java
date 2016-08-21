@@ -64,24 +64,16 @@ public class ArticleItemActivity extends AppCompatActivity {
         setFullScreen(full);
         Bundle bundle = getIntent().getExtras();
         String URL;
-        if(bundle.containsKey("Article")){
+        if(bundle.containsKey("isRead")){
+            isRead = bundle.containsKey("isRead");
             article = (Article) bundle.get("Article");
             if(article != null && article.Tags == null){
                 article.Tags = new ArrayList<>();
             }
-        }else if(bundle.containsKey("url")){
-            URL = bundle.getString("url");
-            isRead = bundle.getBoolean("isRead");
-            ReadArticle readArticle = new ReadArticle();
-            try {
-                article = readArticle.execute(URL).get();
-                if(article.Tags == null){
-                    article.Tags = new ArrayList<>();
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+        }else if(bundle.containsKey("Article")){
+            article = (Article) bundle.get("Article");
+            if(article != null && article.Tags == null){
+                article.Tags = new ArrayList<>();
             }
         }
 
@@ -147,9 +139,9 @@ public class ArticleItemActivity extends AppCompatActivity {
                 });
             }
         }else{
-            findViewById(R.id.scrollView).setVisibility(View.INVISIBLE);
-            findViewById(R.id.article_tag_header).setVisibility(View.INVISIBLE);
-
+            findViewById(R.id.scrollView).setVisibility(View.GONE);
+            findViewById(R.id.article_tag_header).setVisibility(View.GONE);
+            findViewById(R.id.article_tag_view).setVisibility(View.GONE);
         }
 
 

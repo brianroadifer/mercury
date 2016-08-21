@@ -3,7 +3,9 @@ package com.brianroadifer.mercuryfeed.Activities;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -12,13 +14,16 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.RequiresPermission;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,9 +39,11 @@ import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -46,16 +53,18 @@ public class ItemActivity extends AppCompatActivity {
 
     String title,url,imageUrl,author,description,date;
     Article article = new Article();
+    SharedPreferences pref;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
         String theme = pref.getString("app_screen", "Light");
         String primary = pref.getString("app_primary", "Blue Grey");
         String accent = pref.getString("app_accent", "Blue Grey");
         String statusBar = pref.getString("app_status", "Blue Grey");
         String navigation = pref.getString("app_navigation", "Black");
+
         decideTheme(theme, primary, accent, statusBar, navigation);
         Bundle bundle = getIntent().getExtras();
         setContentView(R.layout.activity_item);
@@ -111,7 +120,15 @@ public class ItemActivity extends AppCompatActivity {
                 readMode();
                 break;
             case R.id.action_third:
-                saveArticle();
+                int limit = pref.getInt("offline_limit", 0);
+                long stored = ArticleHelper.getOfflineArticleSize(getApplicationContext());
+                if(stored >= limit && !(limit <= 0)){
+                    createWarningDialog(limit);
+                }else if(stored + 1 >= limit && !(limit <= 0)){
+                    createOverLimitDialog(limit);
+                }else{
+                    saveArticle();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -120,6 +137,7 @@ public class ItemActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.menu_feed_item, menu);
+        
         return true;
     }
     public void shareItemURL(){
@@ -131,11 +149,33 @@ public class ItemActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(shareIntent,"Share Via"));
     }
     public void readMode(){
-        Intent intent = new Intent(getApplicationContext(), ArticleItemActivity.class);
-        intent.putExtra("url", url);
-        intent.putExtra("isRead", true);
-        startActivity(intent);
-        finish();
+        final ReadArticle readArticle = new ReadArticle();
+        final ProgressDialog progressDialog = new ProgressDialog(this, R.style.AppTheme_ProgressDialog);
+        progressDialog.setMessage("Launching Read Mode");
+        progressDialog.setIndeterminate(true);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                readArticle.execute(url);
+                try {
+                    article = readArticle.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+                progressDialog.dismiss();
+                Intent intent = new Intent(getApplicationContext(), ArticleItemActivity.class);
+                intent.putExtra("isRead", true);
+                intent.putExtra("Article", article);
+                startActivity(intent);
+            }
+        }).start();
+
     }
     public void saveArticle(){
         final ReadArticle readArticle = new ReadArticle();
@@ -147,6 +187,7 @@ public class ItemActivity extends AppCompatActivity {
         builder.setLargeIcon(bm);
         builder.setContentTitle("Downloading Article");
         builder.setContentText(title);
+        builder.setCategory(Notification.CATEGORY_PROGRESS);
         builder.setGroup("GROUP_ARTICLE_DOWNLOAD");
         builder.setGroupSummary(true);
         builder.setOngoing(true);
@@ -174,9 +215,11 @@ public class ItemActivity extends AppCompatActivity {
                 builder.setContentIntent(pendingIntent);
                 builder.setContentTitle("Download complete");
                 builder.setAutoCancel(true);
+                builder.setVibrate(new long[]{0,200,0,200,0,0,200,200,100});
                 manager.notify(notificationId, builder.build());
                 ArticleHelper ah = new ArticleHelper(getApplicationContext());
                 ah.SaveArticle(article);
+                Log.d("ItemActivity", "articleSize" + ArticleHelper.getOfflineArticleSize(getApplicationContext()));
             }
         }).start();
     }
@@ -237,5 +280,59 @@ public class ItemActivity extends AppCompatActivity {
             html = m.replaceAll(">Watch</a>");
         html= html.replace("a href=\\", "a href=");
         return html;
+    }
+
+    private void createWarningDialog(final int limit) {
+        String message = "Cannot save more than "+limit+" article(s).\nDelete older articles to save this one?";
+        AlertDialog.Builder warningDialog = new AlertDialog.Builder(this)
+                .setMessage(message)
+                .setTitle("Article Offline Limit")
+                .setIcon(R.drawable.ic_warning);
+            warningDialog.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    ArticleHelper articleHelper = new ArticleHelper(getApplicationContext());
+
+                    while (ArticleHelper.getOfflineArticleSize(getApplicationContext()) >= limit) {
+                        List<Article> articleList = articleHelper.LoadArticles();
+                        Article deleteAgent = new Article();
+
+                        for (Article article : articleList) {
+                            if (article.compareTo(deleteAgent) < 0) {
+                                deleteAgent = article;
+                            }
+                        }
+                        File file = new File(getFilesDir(), ArticleHelper.FILENAME + deleteAgent.ID);
+                        articleHelper.DeleteArticle(file);
+                        if (ArticleHelper.isExternalStorageReadable() && ArticleHelper.isExternalStorageWritable()) {
+                            file = new File(getExternalFilesDir(null), ArticleHelper.FILENAME + deleteAgent.ID);
+                            articleHelper.DeleteArticle(file);
+                        }
+                    }
+                    saveArticle();
+                }
+            });
+        warningDialog.create();
+        warningDialog.show();
+    }
+    private void createOverLimitDialog(int limit) {
+        String message = "Saving last article out of "+limit+" articles.\nDelete articles to keep on saving!";
+
+        AlertDialog.Builder warningDialog = new AlertDialog.Builder(this)
+                .setMessage(message)
+                .setTitle("Article Offline Limit")
+                .setIcon(R.drawable.ic_warning);
+
+        if(limit == 0){
+            warningDialog.create();
+        }else{
+            warningDialog.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    saveArticle();
+                }
+            });
+        }
+        warningDialog.show();
     }
 }

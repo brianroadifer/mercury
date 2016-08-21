@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.brianroadifer.mercuryfeed.Activities.ItemActivity;
+import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.Models.Item;
 import com.brianroadifer.mercuryfeed.R;
@@ -33,11 +34,12 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     DatabaseReference feedItemDB = FirebaseDatabase.getInstance().getReference();
     Feed feed;
     Context context;
-    SharedPreferences preferences;
+    boolean sort;
 
-    public FeedItemAdapter(Feed feed, Context context) {
+    public FeedItemAdapter(Feed feed,boolean sort, Context context) {
         this.feed = feed;
         this.context = context;
+        this.sort = sort;
     }
 
     @Override
@@ -49,7 +51,13 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Item current = feed.ItemsDesending().get(position);
+        final Item current;
+        if(sort){
+            current = feed.ItemsDesending().get(position);
+
+        }else{
+            current = feed.ItemsAsending().get(position);
+        }
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
         String themeName = pref.getString("app_screen", "Light");
         holder.Title.setText(current.title);
@@ -84,42 +92,46 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
                 intent.putExtra("Title", current.title);
 
                 Map<String,Object> read = new HashMap<>();
-                read.put("/feed_items/"+current.ID +"/user-read/"+ FirebaseAuth.getInstance().getCurrentUser().getUid().toString(),true);
-                feedItemDB.updateChildren(read);
-                v.setActivated(true);
-                v.setAlpha(0.5f);
+                if(!feed.isSearch) {
+                    read.put("/feed_items/" + current.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid().toString(), true);
+                    feedItemDB.updateChildren(read);
+                    v.setActivated(true);
+                    v.setAlpha(0.5f);
+                }
                 context.startActivity(intent);
             }
 
         });
-        holder.cardView.setOnLongClickListener(new View.OnLongClickListener(){
-            @Override
-            public boolean onLongClick(View v) {
-                Map<String,Object> read = new HashMap<>();
-                read.put("/feed_items/"+current.ID +"/user-read/"+ FirebaseAuth.getInstance().getCurrentUser().getUid().toString(),!v.isActivated());
-                Snackbar snackbar;
-                if(v.isActivated()){
-                    snackbar = Snackbar.make(v, "Marked as unread", Snackbar.LENGTH_LONG);
-                    View sv = snackbar.getView();
-                    TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
-                    stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
-                    snackbar.show();
-                    v.setAlpha(1f);
-                    v.setActivated(false);
-                }else{
-                    snackbar = Snackbar.make(v, "Marked as read", Snackbar.LENGTH_LONG);
-                    View sv = snackbar.getView();
-                    TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
-                    stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
-                    snackbar.show();
-                    v.setAlpha(0.5f);
-                    v.setActivated(true);
-                }
-                feedItemDB.updateChildren(read);
+        if(!feed.isSearch) {
+            holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Map<String, Object> read = new HashMap<>();
+                    read.put("/feed_items/" + current.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid().toString(), !v.isActivated());
+                    Snackbar snackbar;
+                    if (v.isActivated()) {
+                        snackbar = Snackbar.make(v, "Marked as unread", Snackbar.LENGTH_LONG);
+                        View sv = snackbar.getView();
+                        TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                        stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
+                        snackbar.show();
+                        v.setAlpha(1f);
+                        v.setActivated(false);
+                    } else {
+                        snackbar = Snackbar.make(v, "Marked as read", Snackbar.LENGTH_LONG);
+                        View sv = snackbar.getView();
+                        TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                        stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
+                        snackbar.show();
+                        v.setAlpha(0.5f);
+                        v.setActivated(true);
+                    }
+                    feedItemDB.updateChildren(read);
 
-                return true;
-            }
-        });
+                    return true;
+                }
+            });
+        }
         decideTheme(holder, themeName);
     }
 
@@ -135,7 +147,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener  {
         TextView Title, Content, Info;
         ImageView Thumbnail;
         CardView cardView;
@@ -148,7 +160,71 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             Info = (TextView)itemView.findViewById(R.id.news_info);
             Thumbnail = (ImageView)itemView.findViewById(R.id.news_image);
             cardView = (CardView) itemView.findViewById(R.id.card_view);
+            itemView.setOnClickListener(this);
+            if(!feed.isSearch)
+                itemView.setOnLongClickListener(this);
 
+        }
+
+        @Override
+        public void onClick(View v) {
+            Item item;
+            if(sort){
+                item = feed.ItemsDesending().get(getAdapterPosition());
+
+            }else{
+                item = feed.ItemsAsending().get(getAdapterPosition());
+            }
+            Intent intent = new Intent(context, ItemActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("Link", item.link);
+            intent.putExtra("Author", item.author);
+            intent.putExtra("Date", item.timestamp);
+            intent.putExtra("Image", item.thumbnailUrl);
+            intent.putExtra("Description", item.description);
+            intent.putExtra("Title", item.title);
+
+            Map<String,Object> read = new HashMap<>();
+            if(!feed.isSearch) {
+                read.put("/feed_items/" + item.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid().toString(), true);
+                feedItemDB.updateChildren(read);
+                v.setActivated(true);
+                v.setAlpha(0.5f);
+            }
+            context.startActivity(intent);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            Item item;
+            if(sort){
+                item = feed.ItemsDesending().get(getAdapterPosition());
+            }else{
+                item = feed.ItemsAsending().get(getAdapterPosition());
+            }
+            Map<String, Object> read = new HashMap<>();
+            read.put("/feed_items/" + item.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid().toString(), !v.isActivated());
+            Snackbar snackbar;
+            if (v.isActivated()) {
+                snackbar = Snackbar.make(v, "Marked as unread", Snackbar.LENGTH_LONG);
+                View sv = snackbar.getView();
+                TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
+                snackbar.show();
+                v.setAlpha(1f);
+                v.setActivated(false);
+            } else {
+                snackbar = Snackbar.make(v, "Marked as read", Snackbar.LENGTH_LONG);
+                View sv = snackbar.getView();
+                TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
+                snackbar.show();
+                v.setAlpha(0.5f);
+                v.setActivated(true);
+            }
+            feedItemDB.updateChildren(read);
+
+            return true;
         }
     }
     public String Difference(Timestamp timestamp){

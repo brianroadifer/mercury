@@ -14,7 +14,14 @@
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="actionModeBackground">@drawable/action_mode_back</item>
-        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:statusBarColor">@color/colorAccent</item>
+    </style>
+    <style name="AppTheme.ProgressDialog" parent="ThemeOverlay.AppCompat.Dialog">
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:textColor">@color/primaryTextColor</item>
+        <item name="colorAccent">@color/colorAccent</item>
     </style>
 
     <style name="AppTheme.Transparent" parent="AppTheme">
@@ -95,6 +102,8 @@
         <item name="android:textColorHintInverse">@color/lightTextHint</item>
         <item name="android:colorForeground">@color/app_screen_dark</item>
         <item name="android:colorBackground">@color/app_screen_white</item>
+        <item name="android:panelFullBackground">@android:color/white</item>
+        <item name="android:itemBackground">@color/app_screen_light</item>
     </style>
 
     <style name="App.Screen.Dark" parent="AppTheme">
@@ -104,6 +113,8 @@
         <item name="android:textColorHintInverse">@color/darkTextHint</item>
         <item name="android:colorForeground">@color/app_screen_white</item>
         <item name="android:colorBackground">@color/app_screen_dark</item>
+        <item name="android:panelFullBackground">@android:color/black</item>
+        <item name="android:itemBackground">@color/app_screen_dark</item>
     </style>
 
     <style name="App.Screen.White" parent="AppTheme">
@@ -112,6 +123,8 @@
         <item name="android:textColorHintInverse">@color/lightTextHint</item>
         <item name="android:colorForeground">@color/app_screen_black</item>
         <item name="android:colorBackground">@color/app_screen_white</item>
+        <item name="android:panelFullBackground">@android:color/white</item>
+        <item name="android:itemBackground">@color/app_screen_white</item>
     </style>
 
     <style name="App.Screen.Black" parent="AppTheme">
@@ -121,6 +134,8 @@
         <item name="android:textColorHintInverse">@color/darkTextHint</item>
         <item name="android:colorForeground">@color/app_screen_white</item>
         <item name="android:colorBackground">@color/app_screen_black</item>
+        <item name="android:panelFullBackground">@android:color/black</item>
+        <item name="android:itemBackground">@color/app_screen_black</item>
     </style>
 
     <style name="red_red_red_red">

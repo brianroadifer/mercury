@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -68,7 +69,14 @@ public class TagActivity extends BaseActivity {
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
+        NavigationView navigationView = (NavigationView) drawer.findViewById(R.id.nav_view);
+        View  ll = navigationView.getHeaderView(0);
+        ll.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+            }
+        });
         HashtagView.DataStateTransform<Tag> stateTransform = new HashtagView.DataStateTransform<Tag>() {
             @Override
             public CharSequence prepareSelected(Tag item) {
@@ -121,6 +129,7 @@ public class TagActivity extends BaseActivity {
         MenuItem signOut = menu.findItem(R.id.action_two);
         signOut.setTitle("Delete Tags");
         signOut.setIcon(R.drawable.ic_delete_white_48dp);
+        menu.findItem(R.id.action_three).setVisible(false);
         return true;
     }
 
@@ -190,6 +199,11 @@ public class TagActivity extends BaseActivity {
         themeChanger.statusColor(status);
         themeChanger.navigationColor(navigation);
         themeChanger.changeTheme();
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        Menu menu = navigationView.getMenu();
+        menu.getItem(0).setIcon(R.drawable.ic_home);
+        menu.getItem(1).setIcon(R.drawable.ic_articles);
+        menu.getItem(2).setIcon(R.drawable.ic_label);
     }
 }
 

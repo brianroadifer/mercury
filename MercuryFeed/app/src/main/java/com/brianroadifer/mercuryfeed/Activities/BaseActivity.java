@@ -1,10 +1,12 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
+import android.animation.Animator;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -16,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -43,6 +46,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -103,6 +108,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         apiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this,this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API).build();
+
         userFeedsDB.child("username").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -143,7 +149,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                 View  ll = navigationView.getHeaderView(0);
                 photo = (ImageView) ll.findViewById(R.id.user_img);
                 mPhotoUrl = dataSnapshot.getValue().toString();
-                Picasso.with(getApplicationContext()).load(mPhotoUrl).resize(128,128).into(photo);
+                Picasso.with(getApplicationContext()).load(mPhotoUrl).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).resize(200,200).into(photo);
             }
 
             @Override
@@ -151,7 +157,6 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
 
             }
         });
-
         userFeedsDB.child("/subscribed").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -196,9 +201,10 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                 NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
                 navigationView.setNavigationItemSelectedListener(BaseActivity.this);
                 Menu menu = navigationView.getMenu();
-                for(final Feed fd : feeds){
+                for(final Feed fd : sortAscending()){
                     Log.d(TAG,"onDataChange:title: " + fd.Title);
                     final MenuItem item = menu.add(R.id.nav_feed_group, Menu.FIRST, Menu.FLAG_APPEND_TO_GROUP, fd.Title);
+                    item.setIcon(R.drawable.ic_rss);
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     intent.putExtra("URL", fd.FeedUrl);
                     intent.putExtra("Title", fd.Title);
@@ -218,6 +224,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             }
 
         });
+
     }
 
     private void decideTheme(String themeName, String primary, String accent, String status, String navigation) {
@@ -249,15 +256,13 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_all:
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 break;
-            case R.id.nav_settings:
-                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
-                break;
             case R.id.nav_tags:
                 startActivity(new Intent(this, TagActivity.class));
                 break;
             case R.id.nav_articles:
                 startActivity(new Intent(this, ArticleActivity.class));
                 break;
+
             default:
                 if(item.getIntent() != null){
                     startActivity(item.getIntent());
@@ -270,8 +275,25 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    public List<Feed> getFeeds(){
-        return feeds;
+    public List<Feed> sortAscending(){
+        List<Feed> feedz = feeds;
+        Collections.sort(feedz, new Comparator<Feed>() {
+            @Override
+            public int compare(Feed f1, Feed f2) {
+                return f1.compareTo(f2);
+            }
+        });
+        return feedz;
+    }
+    public List<Feed> sortDescending(){
+        List<Feed> feedz = feeds;
+        Collections.sort(feedz, new Comparator<Feed>() {
+            @Override
+            public int compare(Feed f1, Feed f2) {
+                return f2.compareTo(f1);
+            }
+        });
+        return feedz;
     }
 
     @Override

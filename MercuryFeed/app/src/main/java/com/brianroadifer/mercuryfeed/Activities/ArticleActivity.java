@@ -68,9 +68,8 @@ public class ArticleActivity extends AppCompatActivity {
         MenuItem addFeed = menu.findItem(R.id.action_one);
         addFeed.setTitle("Delete Articles");
         addFeed.setIcon(R.drawable.ic_delete_white_48dp);
-        MenuItem signOut = menu.findItem(R.id.action_two);
-        signOut.setVisible(false);
-
+        menu.findItem(R.id.action_two).setVisible(false);
+        menu.findItem(R.id.action_three).setVisible(false);
         return true;
     }
 

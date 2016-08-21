@@ -11,6 +11,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -42,6 +43,9 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,7 +65,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
+     *
+     *
      */
+    static Context context;
+    private static long getSize(){
+        return ArticleHelper.getOfflineArticleSize(context);
+    }
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
@@ -78,8 +88,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         index >= 0
                                 ? listPreference.getEntries()[index]
                                 : null);
-
-            } else if (preference instanceof RingtonePreference) {
+                if(preference.getKey().equalsIgnoreCase("offline_time")){
+                    int add = Integer.parseInt(stringValue);
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.DATE, add);
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences.Editor editor = settings.edit();
+                    Log.d("SettingsActivity", calendar.getTime().toString());
+                    editor.putLong("offline_date", calendar.getTimeInMillis());
+                    editor.apply();
+                }
+            }else if (preference instanceof RingtonePreference) {
                 // For ringtone preferences, look up the correct display value
                 // using RingtoneManager.
                 if (TextUtils.isEmpty(stringValue)) {
@@ -143,6 +162,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = getApplicationContext();
         setupActionBar();
     }
 
@@ -286,7 +306,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("offline_storage"));
-            bindPreferenceSummaryToValue(findPreference("offline_limit"));
             findPreference("offline_delete").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -296,6 +315,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     return false;
                 }
             });
+            bindPreferenceSummaryToValue(findPreference("offline_time"));
         }
 
         @Override
@@ -342,7 +362,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         editor.putString("app_screen", "Light");
                         editor.putString("app_primary", "Blue");
                         editor.putString("app_accent", "Blue");
-                        editor.putString("app_status", "Black");
+                        editor.putString("app_status", "Blue");
                         editor.putString("app_navigation", "Black");
                         editor.putString("article_theme", "Light");
                         editor.putString("article_just", "Left");

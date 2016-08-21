@@ -23,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:textColor="?android:attr/textColor"
         android:id="@+id/tag_dialog_edit"
         android:layout_gravity="center_horizontal" />
     <RelativeLayout android:layout_height="wrap_content" android:layout_width="match_parent">

@@ -193,23 +193,23 @@ public class ArticleHelper {
 
 
     }
-    public long getOfflineArticleSize(){
+    public static long getOfflineArticleSize(Context context){
         long offlineSize = 0;
-        File[] internal = this.context.getFilesDir().listFiles();
+        File[] internal = context.getFilesDir().listFiles();
         File[] external = null;
         if(isExternalStorageReadable() && isExternalStorageWritable()){
-            external = this.context.getExternalFilesDir(null).listFiles();
+            external = context.getExternalFilesDir(null).listFiles();
         }
         for (File file : internal) {
             if (file.isFile() && file.getName().contains(FILENAME)) {
-                offlineSize += file.length();
+                offlineSize += 1;
             }
         }
         if(external != null){
             for (File file: external)
             {
                 if (file.isFile() && file.getName().contains(FILENAME)) {
-                    offlineSize += file.length();
+                    offlineSize += 1;
 
                 }
             }
@@ -217,11 +217,11 @@ public class ArticleHelper {
         return offlineSize;
     }
 
-    public boolean isExternalStorageWritable(){
+    public static boolean isExternalStorageWritable(){
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equalsIgnoreCase(state);
     }
-    public boolean isExternalStorageReadable(){
+    public static boolean isExternalStorageReadable(){
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equalsIgnoreCase(state) || Environment.MEDIA_MOUNTED_READ_ONLY.equalsIgnoreCase(state);
     }

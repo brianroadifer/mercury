@@ -16,10 +16,11 @@ import java.util.Map;
 /**
  * Created by Brian Roadifer on 6/24/2016.
  */
-public class Feed implements Serializable{
+public class Feed implements Serializable, Comparable<Feed>{
     public String Title;
     public String ID;
     public Feed(){}
+    public boolean isSearch;
 
     public Feed(String feedUrl, String title) {
         Title = title;
@@ -56,5 +57,10 @@ public class Feed implements Serializable{
             }
         });
         return items;
+    }
+
+    @Override
+    public int compareTo(@NonNull Feed feed) {
+        return Title.compareTo(feed.Title);
     }
 }

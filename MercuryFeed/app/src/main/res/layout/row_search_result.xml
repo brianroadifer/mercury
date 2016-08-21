@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/search_result"
+    android:padding="8dp"
     tools:context=".Activities.SearchResultsActivity">
 
     <Switch
@@ -12,6 +13,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/search_subscribe_switch"
         android:layout_gravity="right"
+        android:textColor="?android:textColor"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true" />
 

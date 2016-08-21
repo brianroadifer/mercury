@@ -1,9 +1,11 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,6 +96,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     public void onClick(View v) {
                         Intent intent = new Intent(context, MainActivity.class);
                         intent.putExtra("Feed", current);
+                        intent.putExtra("Search", true);
                         context.startActivity(intent);
                     }
                 });
@@ -111,7 +114,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             return feeds.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         TextView Title;
         Switch Subscribe;
         RelativeLayout searchResult;
@@ -120,6 +123,16 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             Title = (TextView) view.findViewById(R.id.search_title);
             Subscribe = (Switch) view.findViewById(R.id.search_subscribe_switch);
             searchResult = (RelativeLayout) view.findViewById(R.id.search_result);
+        }
+
+        @Override
+        public void onClick(View view) {
+
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            return false;
         }
     }
 }

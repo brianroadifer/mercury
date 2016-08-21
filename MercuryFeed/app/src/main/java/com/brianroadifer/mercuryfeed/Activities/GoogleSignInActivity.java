@@ -36,8 +36,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -254,20 +257,32 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                     Log.w(TAG, "signInWithCredential", task.getException());
                     Snackbar.make(getCurrentFocus(), "Authentication Failed.", LENGTH_SHORT).show();
                 }else{
-                    String uid = task.getResult().getUser().getUid();
-                    DatabaseReference userDB = FirebaseDatabase.getInstance().getReference("users");
+                    final String uid = task.getResult().getUser().getUid();
+                    final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference("users");
 
-                    String image = account.getPhotoUrl().toString();
+                    userDB.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(!dataSnapshot.hasChild(uid)){
+                                String image = account.getPhotoUrl().toString();
 
-                    Map<String, Object> users = new HashMap<>();
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("email",account.getEmail());
-                    data.put("profile_picture", image);
-                    data.put("username", account.getDisplayName());
-                    users.put(uid,data);
-                    userDB.updateChildren(users);
-                    startActivity(new Intent(GoogleSignInActivity.this, MainActivity.class));
-                    finish();
+                                Map<String, Object> users = new HashMap<>();
+                                Map<String, Object> data = new HashMap<>();
+                                data.put("email",account.getEmail());
+                                data.put("profile_picture", image);
+                                data.put("username", account.getDisplayName());
+                                users.put(uid,data);
+                                userDB.updateChildren(users);
+                            }
+                            startActivity(new Intent(GoogleSignInActivity.this, MainActivity.class));
+                            finish();
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
         });
@@ -327,9 +342,9 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
         final View dialogView = factory.inflate(R.layout.change_username_dialog, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).create();
         final AutoCompleteTextView change = (AutoCompleteTextView) dialogView.findViewById(R.id.editText);
-        TextView textView = (TextView)findViewById(R.id.textView);
-//        textView.setText("Change Email");
-        change.setHint("Email");
+        TextView textView = (TextView) dialogView.findViewById(R.id.textView);
+        textView.setText("Forgotten password?");
+        change.setHint("Enter account email to reset");
 
 
         dialog.setView(dialogView);
