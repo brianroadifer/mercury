@@ -1,0 +1,1 @@
+Feed collection is turned off but the database is still live
