@@ -363,8 +363,6 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                 }else{
                     change.setError("Invalid Email Format");
                 }
-
-
             }
         });
         dialog.show();
