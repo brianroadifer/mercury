@@ -1,0 +1,1 @@
+wget -O - http://brianroadifer.com/php_cron/index.php >/dev/null 2>&1
