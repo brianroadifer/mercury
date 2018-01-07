@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/abc_dialog_padding_material"
+    android:padding="24dp"
     android:background="?android:colorBackground">
 
     <TextView
@@ -10,13 +10,14 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Add Tag(s)"
+        android:labelFor="@id/tag_dialog_edit"
         android:id="@+id/textView2" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Tags are seperated by a (,)"
+        android:text="Tags are separated by a (,)"
         android:id="@+id/textView3" />
 
     <MultiAutoCompleteTextView

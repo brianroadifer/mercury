@@ -9,11 +9,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-/**
- * Created by Brian Roadifer on 7/13/2016.
- */
 public class DatabaseService extends IntentService {
-    public static FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
     public DatabaseService(){
         super("DatabaseService");
     }

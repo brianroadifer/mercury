@@ -12,9 +12,6 @@ import android.widget.NumberPicker;
 
 import java.text.DecimalFormatSymbols;
 
-/**
- * Created by Brian Roadifer on 8/16/2016.
- */
 public class NumberPickerPreference extends DialogPreference {
 
     private NumberPicker picker;
@@ -76,12 +73,12 @@ public class NumberPickerPreference extends DialogPreference {
         setValue(restorePersistedValue ? getPersistedInt(0) : (Integer) defaultValue);
     }
 
-    public void setValue(int value) {
+    private void setValue(int value) {
         this.value = value;
         persistInt(this.value);
     }
 
-    public int getValue() {
+    private int getValue() {
         return this.value;
     }
 }

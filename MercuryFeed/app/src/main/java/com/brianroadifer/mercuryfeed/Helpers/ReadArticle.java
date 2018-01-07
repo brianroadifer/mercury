@@ -11,13 +11,9 @@ import org.jsoup.nodes.Document;
 import java.util.ArrayList;
 import java.util.UUID;
 
-
-/**
- * Created by Brian Roadifer on 6/27/2016.
- */
 public class ReadArticle extends AsyncTask<String, Integer, Article> {
-    Article article = new Article();
-    String url;
+    private Article article = new Article();
+    private String url;
 
     public ReadArticle(){
     }
@@ -35,16 +31,11 @@ public class ReadArticle extends AsyncTask<String, Integer, Article> {
     }
 
     @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
-    @Override
     protected void onPostExecute(Article aVoid) {
         super.onPostExecute(aVoid);
     }
 
-    public void ProcessHTML(Document data) {
+    private void ProcessHTML(Document data) {
         if(data != null){
             try {
                 Readability readability = new Readability(data){
@@ -67,9 +58,8 @@ public class ReadArticle extends AsyncTask<String, Integer, Article> {
         }
     }
 
-    public Document GetData(String rssUrl){
+    private Document GetData(String rssUrl){
         try {
-            StringBuffer buffer = new StringBuffer();
             Document document;
             try{
                 Log.d("JSwa", "Connecting to ["+ rssUrl+ "]");

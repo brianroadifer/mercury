@@ -19,13 +19,9 @@ import com.brianroadifer.mercuryfeed.R;
 import java.io.File;
 import java.util.List;
 
-
-/**
- * Created by Brian Roadifer on 7/1/2016.
- */
 public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHolder> {
-    List<Article> articles;
-    Context context;
+    private final List<Article> articles;
+    private final Context context;
 
     public ArticleAdapter(List<Article> articles, Context context){
         this.articles = articles;
@@ -35,8 +31,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.row_article_item, parent, false);
-        ViewHolder holder = new ViewHolder(view);
-        return holder;
+        return new ViewHolder(view);
     }
 
     @Override
@@ -46,7 +41,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
         String themeName = pref.getString("app_screen", "Light");
         if(current != null){
             holder.Title.setText(current.Title);
-        }else if(current == null && articles.size() == 1){
+        }else if(articles.size() == 1){
             holder.Title.setText("Articles Related Not Found");
         }else{
             holder.cardView.setVisibility(View.GONE);
@@ -64,12 +59,12 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
-        TextView Title;
-        CardView cardView;
+        final TextView Title;
+        final CardView cardView;
         public ViewHolder(View view){
             super(view);
-            Title = (TextView) view.findViewById(R.id.row_article_title);
-            cardView = (CardView) view.findViewById(R.id.articleview);
+            Title = view.findViewById(R.id.row_article_title);
+            cardView = view.findViewById(R.id.article_view);
             view.setOnClickListener(this);
             view.setOnLongClickListener(this);
         }
@@ -90,7 +85,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
             if (v.isActivated()) {
                 snackbar = Snackbar.make(v, "Saved Article", Snackbar.LENGTH_LONG);
                 View sv = snackbar.getView();
-                TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                TextView stv = sv.findViewById(android.support.design.R.id.snackbar_text);
                 stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
                 snackbar.show();
                 v.setAlpha(1f);
@@ -99,17 +94,18 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.ViewHold
             } else {
                 snackbar = Snackbar.make(v, "Deleted Article", Snackbar.LENGTH_LONG);
                 View sv = snackbar.getView();
-                TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                TextView stv = sv.findViewById(android.support.design.R.id.snackbar_text);
                 stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
                 snackbar.show();
                 v.setAlpha(0.5f);
                 v.setActivated(true);
                 File file = new File(context.getFilesDir(), ArticleHelper.FILENAME + article.ID);
-                articleHelper.DeleteArticle(file);
+                boolean articleDeleted = articleHelper.DeleteArticle(file);
                 if(ArticleHelper.isExternalStorageReadable() && ArticleHelper.isExternalStorageWritable()){
                     file = new File(context.getExternalFilesDir(null), ArticleHelper.FILENAME + article.ID);
-                    articleHelper.DeleteArticle(file);
+                    articleDeleted = articleHelper.DeleteArticle(file);
                 }
+                return articleDeleted;
             }
             return false;
         }

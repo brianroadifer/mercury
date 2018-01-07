@@ -11,44 +11,24 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
-import android.support.v7.app.AlertDialog;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
-import android.view.View;
-import android.widget.AutoCompleteTextView;
-import android.widget.TextView;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.FirebaseDatabase;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -68,11 +48,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      *
      *
      */
-    static Context context;
-    private static long getSize(){
-        return ArticleHelper.getOfflineArticleSize(context);
-    }
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+    private static final Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
@@ -92,7 +68,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     int add = Integer.parseInt(stringValue);
                     Calendar calendar = Calendar.getInstance();
                     calendar.add(Calendar.DATE, add);
-                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
                     SharedPreferences.Editor editor = settings.edit();
                     Log.d("SettingsActivity", calendar.getTime().toString());
                     editor.putLong("offline_date", calendar.getTimeInMillis());
@@ -162,7 +138,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        context = getApplicationContext();
         setupActionBar();
     }
 
@@ -311,7 +286,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 public boolean onPreferenceClick(Preference preference) {
                     ArticleHelper articleHelper = new ArticleHelper(preference.getContext());
                     articleHelper.DeleteArticles();
-                    Snackbar.make(getActivity().getCurrentFocus(), "Deleted Saved Articles", Snackbar.LENGTH_SHORT).show();
+                    if(getActivity().getCurrentFocus() != null)
+                        Snackbar.make(getActivity().getCurrentFocus(), "Deleted Saved Articles", Snackbar.LENGTH_SHORT).show();
                     return false;
                 }
             });

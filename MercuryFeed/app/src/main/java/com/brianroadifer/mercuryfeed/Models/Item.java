@@ -5,9 +5,6 @@ import android.support.annotation.NonNull;
 import java.sql.Timestamp;
 
 
-/**
- * Created by Brian Roadifer on 5/28/2016.
- */
 public class Item implements Comparable<Item> {
     public String title;
     public String description;

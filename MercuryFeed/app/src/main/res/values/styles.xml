@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -34,17 +34,18 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
+    <style name="AppTheme.NoActionBar" tools:keep="@style/AppTheme_NoActionBar">
+        false
+        true
+        true
+        @android:color/transparent</style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="AppTheme.BrandedLaunch" parent="AppTheme">
-        <item name="android:windowBackground">@drawable/splash</item>
+        <!--<item name="android:windowBackground">@drawable/splash</item>-->
     </style>
 
     <style name="Article.Light" parent="AppTheme">
@@ -138,7 +139,7 @@
         <item name="android:itemBackground">@color/app_screen_black</item>
     </style>
 
-    <style name="red_red_red_red">
+    <style name="red_red_red_red" tools:keep="@style/red_red_red_red">
         <item name="colorPrimary">#f44336</item>
         <item name="colorPrimaryDark">#d32f2f</item>
         <item name="colorAccent">#ff5252</item>

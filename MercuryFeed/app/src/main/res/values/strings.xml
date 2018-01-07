@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Mercury Feed</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -80,15 +80,6 @@
 
     <string name="download_article_notification_title_template">Downloading %1$s</string>
 
-    <!-- TODO: remove this placeholder text -->
-    <string name="download_article_notification_placeholder_text_template">You said %1$s and lorem
-        ipsum dolor sit amet, consectetur adipiscing elit. Etiam non enim magna. Morbi dictum, velit
-        vel semper venenatis, magna odio volutpat velit, at ullamcorper nulla lacus sed turpis.
-        Pellentesque vitae metus elit, nec tincidunt tellus. Integer sed nisl sem, ullamcorper
-        ornare lacus. Duis ac mauris sed massa congue volutpat. Donec sed erat sit amet turpis
-        viverra rhoncus sit amet nec magna. Donec lacinia ligula at libero volutpat volutpat nec nec
-        tortor.
-    </string>
     <string name="facebook_app_id">1697719627160299</string>
     <string name="title_activity_base_login">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
@@ -193,20 +184,13 @@
     <string name="title_activity_user">User Settings</string>
 
     <string name="download_notification_title_template">Download: %1$s</string>
+    <string name="download_notification_placeholder_text_template">%1$s</string>
 
-    <!-- TODO: remove this placeholder text -->
-    <string name="download_notification_placeholder_text_template">You said %1$s and lorem ipsum
-        dolor sit amet, consectetur adipiscing elit. Etiam non enim magna. Morbi dictum, velit vel
-        semper venenatis, magna odio volutpat velit, at ullamcorper nulla lacus sed turpis.
-        Pellentesque vitae metus elit, nec tincidunt tellus. Integer sed nisl sem, ullamcorper
-        ornare lacus. Duis ac mauris sed massa congue volutpat. Donec sed erat sit amet turpis
-        viverra rhoncus sit amet nec magna. Donec lacinia ligula at libero volutpat volutpat nec nec
-        tortor.
-    </string>
     <string name="user_s_image">User\'s Image</string>
     <string name="sample_name">Brian Roadifer</string>
     <string name="sample_email">brnrdfr@gmail.com</string>
     <string name="start_settings">startSettings()</string>
     <string name="all">All</string>
     <string name="offline_limit_default_value">0</string>
+
 </resources>

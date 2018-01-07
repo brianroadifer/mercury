@@ -13,11 +13,8 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
 import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
@@ -37,13 +34,13 @@ import java.util.regex.Pattern;
 
 public class UserActivity extends AppCompatActivity {
     private static final String TAG = "UserActivity";
-    FirebaseAuth firebaseAuth;
-    FirebaseUser firebaseUser;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
@@ -76,7 +73,7 @@ public class UserActivity extends AppCompatActivity {
         LayoutInflater factory = LayoutInflater.from(this);
         final View dialogView = factory.inflate(R.layout.change_username_dialog, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).create();
-        final AutoCompleteTextView change = (AutoCompleteTextView) dialogView.findViewById(R.id.editText);
+        final AutoCompleteTextView change = dialogView.findViewById(R.id.editText);
 
         dialog.setView(dialogView);
         dialogView.findViewById(R.id.tag_dialog_btn_yes).setOnClickListener(new View.OnClickListener() {
@@ -113,9 +110,7 @@ public class UserActivity extends AppCompatActivity {
         LayoutInflater factory = LayoutInflater.from(this);
         final View dialogView = factory.inflate(R.layout.change_username_dialog, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).create();
-        final AutoCompleteTextView change = (AutoCompleteTextView) dialogView.findViewById(R.id.editText);
-        TextView textView = (TextView)findViewById(R.id.textView);
-//        textView.setText("Change Email");
+        final AutoCompleteTextView change = dialogView.findViewById(R.id.editText);
         change.setHint("Email");
 
 
@@ -124,9 +119,9 @@ public class UserActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final String text = change.getText().toString();
-                if(isVaildEmail(text)){
+                if(isValidEmail(text)){
 
-                    String hash = generateHash(text.toLowerCase().trim(), "md5");
+                    String hash = generateHash(text.toLowerCase().trim());
                     final String image = "https://www.gravatar.com/avatar/"+hash+"?d=identicon";
                     final UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                             .setPhotoUri(Uri.parse(image))
@@ -170,8 +165,7 @@ public class UserActivity extends AppCompatActivity {
         LayoutInflater factory = LayoutInflater.from(this);
         final View dialogView = factory.inflate(R.layout.change_username_dialog, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).create();
-        final AutoCompleteTextView change = (AutoCompleteTextView) dialogView.findViewById(R.id.editText);
-        TextView textView = (TextView)findViewById(R.id.textView);
+        final AutoCompleteTextView change = dialogView.findViewById(R.id.editText);
         change.setHint("Password");
         change.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
@@ -181,7 +175,7 @@ public class UserActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String text = change.getText().toString();
-                if(isVaildPassword(text)){
+                if(isValidPassword(text)){
 
                     firebaseUser.updatePassword(text).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -254,59 +248,55 @@ public class UserActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private String generateHash(String message, String algorithm){
-        String original = message;
+    private String generateHash(String message){
         MessageDigest md = null;
         try {
-            md = MessageDigest.getInstance(algorithm);
+            md = MessageDigest.getInstance("md5");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        md.update(original.getBytes());
-        byte[] digest = md.digest();
-        StringBuffer sb = new StringBuffer();
-        for(byte b:digest){
-            sb.append(String.format("%02x", b & 0xff));
+        if(md != null){
+            md.update(message.getBytes());
+            byte[] digest = md.digest();
+            StringBuilder sb = new StringBuilder();
+            for(byte b:digest){
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
         }
-        return sb.toString();
+    return "";
     }
 
-    private boolean isVaildEmail(String email){
+    private boolean isValidEmail(String email){
         String EMAIL_PATTERN = "^(?=[a-zA-Z0-9][a-zA-Z0-9@._%+-]{5,253}+$)[a-zA-Z0-9._%+-]{1,64}+@(?:(?=[a-zA-Z0-9]{1,63}+\\.)[a-zA-Z0-9]++(?:-[a-zA-Z0-9]++)*+\\.){1,8}+[a-zA-Z]{2,63}+$";
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }
 
-    private boolean isVaildPassword(String password){
-        if(!password.isEmpty() && (password.length() > 6)){
-            return true;
-        }
-        return false;
+    private boolean isValidPassword(String password){
+        return !password.isEmpty() && (password.length() > 6);
     }
 
     private void hideWindow(){
-        CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.user_view);
+        CoordinatorLayout coordinatorLayout = findViewById(R.id.user_view);
         coordinatorLayout.setVisibility(View.GONE);
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.dimAmount = 1f;
     }
 
     private boolean deleteDir(File dir){
-        if(dir != null && dir.isDirectory()){
+        if (dir != null && dir.isDirectory()) {
             String[] kids = dir.list();
-            for(String kid : kids){
+            for (String kid : kids) {
                 boolean success = deleteDir(new File(dir, kid));
-                if(!success){
+                if (!success) {
                     return false;
                 }
             }
             return dir.delete();
-        }else if(dir != null && dir.isFile()){
-            return dir.delete();
-        }else {
-            return false;
-        }
+        } else
+            return dir != null && dir.isFile() && dir.delete();
     }
 
 }

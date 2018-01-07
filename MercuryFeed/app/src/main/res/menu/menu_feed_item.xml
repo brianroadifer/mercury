@@ -5,7 +5,7 @@
         android:title="@string/action_share"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_share_white_48dp"
-        android:actionProviderClass="android.widget.ShareActionProvider"/>
+        app:actionProviderClass="android.widget.ShareActionProvider" />
     <item android:id="@+id/action_second"
         android:title="Read Article"
         app:showAsAction="ifRoom"

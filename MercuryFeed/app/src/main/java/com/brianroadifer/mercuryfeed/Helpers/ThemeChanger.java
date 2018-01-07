@@ -1,27 +1,22 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Typeface;
 
 import com.brianroadifer.mercuryfeed.R;
 
-
-/**
- * Created by Brian Roadifer on 8/1/2016.
- */
 public class ThemeChanger {
 
-    final static String ACCENT = "blue";
-    final static String PRIMARY = "blue";
-    final static String STATUS = "blue";
-    final static String NAVIGATION = "black";
+    private final static String ACCENT = "blue";
+    private final static String PRIMARY = "blue";
+    private final static String STATUS = "blue";
+    private final static String NAVIGATION = "black";
 
-    String accent = "blue";
-    String primary = "blue";
-    String status = "blue";
-    String navigation = "black";
-    private Context context;
+    private String accent = "blue";
+    private String primary = "blue";
+    private String status = "blue";
+    private String navigation = "black";
+    private final Context context;
 
     public ThemeChanger(Context context){
         this.context = context;
@@ -56,7 +51,7 @@ public class ThemeChanger {
         context.getTheme().applyStyle(id, true);
     }
 
-    public String modString(String string){
+    private String modString(String string){
       return  string.toLowerCase().replace(" ", "_");
     }
 
@@ -81,7 +76,7 @@ public class ThemeChanger {
         if(!navigation.isEmpty()){
             this.navigation = modString(navigation);
         }else{
-            this.navigation = navigation;
+            this.navigation = NAVIGATION;
         }
 
     }
@@ -96,8 +91,7 @@ public class ThemeChanger {
     }
 
     public Typeface selectTypeFace(String typeface){
-        Typeface type = Typeface.createFromAsset(context.getAssets(), "fonts/"+typeface+".ttf");
-        return type;
+        return Typeface.createFromAsset(context.getAssets(), "fonts/"+typeface+".ttf");
     }
 
 }

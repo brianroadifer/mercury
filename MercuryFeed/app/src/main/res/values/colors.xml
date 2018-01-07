@@ -11,7 +11,7 @@
     <color name="hintTextColor">#61000000</color>
     <color name="primaryTextColorInverse">#ffffffff</color>
     <color name="secondaryTextColorInverse">#B3ffffff</color>
-    <color name="hintTextColorInvers">#80ffffff</color>
+    <color name="hintTextColorInverse">#80ffffff</color>
     <color name="whiteAlpha">#4fff</color>
     <color name="transparent50">#80000000</color>
 

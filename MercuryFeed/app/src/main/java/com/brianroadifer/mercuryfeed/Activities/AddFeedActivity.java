@@ -8,11 +8,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
@@ -22,12 +20,9 @@ import com.google.firebase.database.DatabaseException;
 
 import org.jsoup.Jsoup;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 public class AddFeedActivity extends AppCompatActivity {
     private final static String TAG = "AddFeedActivity";
-    DatabaseHelper dh = new DatabaseHelper();
+    private final DatabaseHelper dh = new DatabaseHelper();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,10 +35,10 @@ public class AddFeedActivity extends AppCompatActivity {
         decideTheme(theme, primary, accent, status, navigation);
         setContentView(R.layout.activity_add_feed);
 
-        final EditText addSearch = (EditText) findViewById(R.id.add_feed_search);
-        final EditText addTitle = (EditText) findViewById(R.id.add_feed_title);
-        final EditText addUrl = (EditText) findViewById(R.id.add_feed_url);
-        Button addButton = (Button) findViewById(R.id.add_feed_button);
+        final EditText addSearch = findViewById(R.id.add_feed_search);
+        final EditText addTitle = findViewById(R.id.add_feed_title);
+        final EditText addUrl = findViewById(R.id.add_feed_url);
+        Button addButton = findViewById(R.id.add_feed_button);
 
         pingUpdate();
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -73,9 +68,10 @@ public class AddFeedActivity extends AppCompatActivity {
         });
 
     }
-    protected void pingUpdate(){
+    private void pingUpdate(){
         try{
-            new AsyncTask<Void,Void,Void>(){
+            AsyncTask<Void,Void,Void> ping;
+            ping = new AsyncTask<Void,Void,Void>(){
 
                 @Override
                 protected Void doInBackground(Void... params) {
@@ -84,7 +80,8 @@ public class AddFeedActivity extends AppCompatActivity {
                     Log.d(TAG, "pingUpdate:Connected to [http://brianroadifer.com/php_cron/index.php]");
                     return null;
                 }
-            }.execute();
+            };
+            ping.execute();
         }catch (Exception e){
             Log.d(TAG, "pingUpdate:Unable to connect to [http://brianroadifer.com/php_cron/index.php]", e);
 //            e.printStackTrace();

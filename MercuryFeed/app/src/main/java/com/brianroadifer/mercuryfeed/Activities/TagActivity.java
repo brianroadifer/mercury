@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class TagActivity extends BaseActivity {
-    List<Tag> tagList = new ArrayList<>();
+    private final List<Tag> tagList = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,11 +44,11 @@ public class TagActivity extends BaseActivity {
         String navigation = pref.getString("app_navigation", "Black");
         decideTheme(theme, primary, accent, status, navigation);
         setContentView(R.layout.activity_tag);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Map<String, Tag> unq = new HashMap<>();
 
-        HashtagView hashtagView = (HashtagView) findViewById(R.id.tag_view);
+        HashtagView hashtagView = findViewById(R.id.tag_view);
         List<Article> articles = articleHelper.LoadArticles();
         for (Article article : articles) {
             if(article.Tags != null) {
@@ -64,12 +64,12 @@ public class TagActivity extends BaseActivity {
         tagList.addAll(unq.values());
 
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
-        NavigationView navigationView = (NavigationView) drawer.findViewById(R.id.nav_view);
+        NavigationView navigationView = drawer.findViewById(R.id.nav_view);
         View  ll = navigationView.getHeaderView(0);
         ll.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,15 +81,13 @@ public class TagActivity extends BaseActivity {
             @Override
             public CharSequence prepareSelected(Tag item) {
                 String label = item.Name;
-                SpannableString spannableString = new SpannableString(label);
-                return spannableString;
+                return new SpannableString(label);
             }
 
             @Override
             public CharSequence prepare(Tag item) {
                 String label = item.Name;
-                SpannableString spannableString = new SpannableString(label);
-                return spannableString;
+                return new SpannableString(label);
             }
         };
         hashtagView.addOnTagClickListener(new HashtagView.TagsClickListener() {
@@ -151,7 +149,7 @@ public class TagActivity extends BaseActivity {
        LayoutInflater factory = LayoutInflater.from(this);
        final View tagDialogView = factory.inflate(R.layout.add_tag_dialog, null);
        final AlertDialog tagDialog = new AlertDialog.Builder(this).create();
-       final MultiAutoCompleteTextView edit = (MultiAutoCompleteTextView) tagDialogView.findViewById(R.id.tag_dialog_edit);
+       final MultiAutoCompleteTextView edit = tagDialogView.findViewById(R.id.tag_dialog_edit);
        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.tag_suggestion, getTagArray(tagList));
        edit.setAdapter(adapter);
        edit.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
@@ -199,7 +197,7 @@ public class TagActivity extends BaseActivity {
         themeChanger.statusColor(status);
         themeChanger.navigationColor(navigation);
         themeChanger.changeTheme();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         Menu menu = navigationView.getMenu();
         menu.getItem(0).setIcon(R.drawable.ic_home);
         menu.getItem(1).setIcon(R.drawable.ic_articles);

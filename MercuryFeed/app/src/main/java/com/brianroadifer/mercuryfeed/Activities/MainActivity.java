@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -18,13 +17,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -57,10 +53,9 @@ public class MainActivity extends BaseActivity {
 
     private Feed feed = new Feed();
 
-    private FirebaseUser user;
-    boolean isSearch;
+    private boolean isSearch;
 
-    ProgressDialog progressDialog;
+    private ProgressDialog progressDialog;
     private boolean sort = true;
 
     @Override
@@ -76,7 +71,7 @@ public class MainActivity extends BaseActivity {
         long dateDelete = pref.getLong("offline_date", -1);
         int limit = pref.getInt("offline_limit", 0);
         decideTheme(theme, primary, accent, status, navigation);
-        user = fireAuth.getCurrentUser();
+        FirebaseUser user = fireAuth.getCurrentUser();
 
         if (user != null) {
             Log.d(TAG,"User Signed In");
@@ -84,7 +79,7 @@ public class MainActivity extends BaseActivity {
             Application application = this.getApplication();
             setContentView(R.layout.activity_main);
             View parentLayout = findViewById(R.id.drawer_layout);
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            Toolbar toolbar = findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
             Bundle bundle = getIntent().getExtras();
             if (bundle != null) {
@@ -130,7 +125,7 @@ public class MainActivity extends BaseActivity {
                                     articleHelper.SaveArticles(toBeDeleted);
                                     Snackbar snackbar1 = Snackbar.make(view, "Restored Articles", Snackbar.LENGTH_SHORT);
                                     View s1v = snackbar1.getView();
-                                    TextView s1tv = (TextView) s1v.findViewById(android.support.design.R.id.snackbar_text);
+                                    TextView s1tv = s1v.findViewById(android.support.design.R.id.snackbar_text);
                                     s1tv.setTextColor(getResources().getColor(R.color.article_background_white));
                                     snackbar1.show();
                                 }
@@ -144,7 +139,7 @@ public class MainActivity extends BaseActivity {
                     editor.putLong("offline_date", calendar.getTimeInMillis());
                     editor.apply();
                     View sv = snackbar.getView();
-                    TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                    TextView stv = sv.findViewById(android.support.design.R.id.snackbar_text);
                     stv.setTextColor(getResources().getColor(R.color.article_background_white));
                     snackbar.show();
                 }
@@ -173,16 +168,14 @@ public class MainActivity extends BaseActivity {
                             item.thumbnailUrl = (String) dataSnapshot.child(snap.getKey()).child("thumbnail").getValue();
                             long unix = (long) dataSnapshot.child(snap.getKey()).child("published").getValue();
                             item.timestamp = new Timestamp(unix * 1000L);
-                            if (id.equalsIgnoreCase(feed.ID)) {
+                            if (id != null && id.equalsIgnoreCase(feed.ID)) {
                                 for(Feed fd: feeds){
                                     if(fd.ID.equalsIgnoreCase(id)){
                                         feed.Title = fd.Title;
                                     }
                                 }
-                                if (item != null) {
-                                    setTitle(feed.Title);
-                                    feed.Items.add(item);
-                                }
+                                setTitle(feed.Title);
+                                feed.Items.add(item);
                             } else if (feed.ID == null) {
                                 setTitle("All");
                                 feed.Items.add(item);
@@ -198,13 +191,13 @@ public class MainActivity extends BaseActivity {
                 }
             });
 
-            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            DrawerLayout drawer = findViewById(R.id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                     this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-            drawer.setDrawerListener(toggle);
+            drawer.addDrawerListener(toggle);
             toggle.syncState();
 
-            NavigationView navigationView = (NavigationView) drawer.findViewById(R.id.nav_view);
+            NavigationView navigationView = drawer.findViewById(R.id.nav_view);
             View  ll = navigationView.getHeaderView(0);
             ll.findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -261,7 +254,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void handleFeed(Feed feed){
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
         FeedItemAdapter feedItemAdapter = new FeedItemAdapter(feed, sort, getApplicationContext());
         LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
@@ -278,7 +271,7 @@ public class MainActivity extends BaseActivity {
         themeChanger.navigationColor(navigation);
         themeChanger.changeTheme();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         Menu menu = navigationView.getMenu();
         menu.getItem(0).setIcon(R.drawable.ic_home);
         menu.getItem(1).setIcon(R.drawable.ic_articles);
@@ -291,9 +284,9 @@ public class MainActivity extends BaseActivity {
         LayoutInflater factory = LayoutInflater.from(this);
         final View feedDialogView = factory.inflate(R.layout.add_feed_dialog, null);
         final AlertDialog feedDialog = new AlertDialog.Builder(this).create();
-        final EditText addSearch = (EditText) feedDialogView.findViewById(R.id.feed_dialog_search);
-        final AutoCompleteTextView addTitle = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_title);
-        final AutoCompleteTextView addUrl = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_url);
+        final EditText addSearch = feedDialogView.findViewById(R.id.feed_dialog_search);
+        final AutoCompleteTextView addTitle = feedDialogView.findViewById(R.id.feed_dialog_title);
+        final AutoCompleteTextView addUrl = feedDialogView.findViewById(R.id.feed_dialog_url);
         final DatabaseHelper dh = new DatabaseHelper();
 
         feedDialog.setView(feedDialogView);

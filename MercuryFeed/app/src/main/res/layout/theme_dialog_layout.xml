@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Color Picker"
+        android:labelFor="@id/editText"
         android:id="@+id/color_picker_title" />
 
     <TextView
@@ -27,9 +28,7 @@
         android:longClickable="false"
         android:max="255"
         android:layout_alignBottom="@+id/textView"
-        android:layout_alignRight="@+id/theme_green_seekbar"
         android:layout_alignEnd="@+id/theme_green_seekbar"
-        android:layout_toRightOf="@+id/textView2"
         android:layout_toEndOf="@+id/textView2" />
 
     <TextView
@@ -46,10 +45,8 @@
         android:id="@+id/theme_green_seekbar"
         android:max="255"
         android:layout_alignBottom="@+id/textView2"
-        android:layout_alignRight="@+id/theme_blue_seekbar"
         android:layout_alignEnd="@+id/theme_blue_seekbar"
-        android:layout_toEndOf="@+id/textView2"
-        android:layout_toRightOf="@+id/textView2" />
+        android:layout_toEndOf="@+id/textView2" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -64,9 +61,7 @@
         android:id="@+id/theme_blue_seekbar"
         android:max="255"
         android:layout_alignBottom="@+id/textView3"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_toRightOf="@+id/textView2"
         android:layout_toEndOf="@+id/textView2" />
 
     <EditText
@@ -74,9 +69,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/editText"
         android:layout_below="@+id/textView3"
-        android:layout_alignRight="@+id/theme_blue_seekbar"
         android:layout_alignEnd="@+id/theme_blue_seekbar"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
     <FrameLayout
@@ -84,14 +77,12 @@
         android:layout_height="48dp"
         android:layout_below="@+id/editText"
         android:id="@+id/frameLayout"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"></FrameLayout>
+        android:layout_alignParentStart="true"/>
 
     <FrameLayout
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_below="@+id/editText"
-        android:layout_toRightOf="@+id/frameLayout"
         android:layout_toEndOf="@+id/frameLayout" />
 
 </RelativeLayout>

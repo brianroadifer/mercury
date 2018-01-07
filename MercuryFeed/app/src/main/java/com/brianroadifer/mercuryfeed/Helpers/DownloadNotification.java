@@ -52,13 +52,11 @@ public class DownloadNotification {
         final Bitmap picture = BitmapFactory.decodeResource(res, R.drawable.example_picture);
 
 
-        final String ticker = exampleString;
         final String title = res.getString(
                 R.string.download_notification_title_template, exampleString);
-        final String text = res.getString(
-                R.string.download_notification_placeholder_text_template, exampleString);
+        final String text = res.getString(R.string.download_notification_placeholder_text_template, exampleString);
 
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "download_channel")
 
                 // Set appropriate defaults for the notification light, sound,
                 // and vibration.
@@ -81,7 +79,7 @@ public class DownloadNotification {
                 .setLargeIcon(picture)
 
                 // Set ticker text (preview) information for this notification.
-                .setTicker(ticker)
+                .setTicker(exampleString)
 
                 // Show a number. This is useful when stacking notifications of
                 // a single type.
@@ -115,10 +113,8 @@ public class DownloadNotification {
     private static void notify(final Context context, final Notification notification) {
         final NotificationManager nm = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
+        if (nm != null) {
             nm.notify(NOTIFICATION_TAG, 0, notification);
-        } else {
-            nm.notify(NOTIFICATION_TAG.hashCode(), notification);
         }
     }
 
@@ -130,10 +126,8 @@ public class DownloadNotification {
     public static void cancel(final Context context) {
         final NotificationManager nm = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
+        if (nm != null) {
             nm.cancel(NOTIFICATION_TAG, 0);
-        } else {
-            nm.cancel(NOTIFICATION_TAG.hashCode());
         }
     }
 }

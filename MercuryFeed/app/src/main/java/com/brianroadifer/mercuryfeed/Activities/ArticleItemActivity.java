@@ -28,7 +28,6 @@ import android.widget.MultiAutoCompleteTextView;
 import android.widget.TextView;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
-import com.brianroadifer.mercuryfeed.Helpers.ReadArticle;
 import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Tag;
@@ -43,11 +42,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 public class ArticleItemActivity extends AppCompatActivity {
-    boolean isRead= false;
-    Article article;
+    private boolean isRead= false;
+    private Article article;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,28 +57,29 @@ public class ArticleItemActivity extends AppCompatActivity {
         boolean full = pref.getBoolean("article_full", false);
         decideTheme(themeName);
         setContentView(R.layout.activity_article_item);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         setFullScreen(full);
         Bundle bundle = getIntent().getExtras();
-        String URL;
-        if(bundle.containsKey("isRead")){
-            isRead = bundle.containsKey("isRead");
-            article = (Article) bundle.get("Article");
-            if(article != null && article.Tags == null){
-                article.Tags = new ArrayList<>();
-            }
-        }else if(bundle.containsKey("Article")){
-            article = (Article) bundle.get("Article");
-            if(article != null && article.Tags == null){
-                article.Tags = new ArrayList<>();
+        if (bundle != null) {
+            if(bundle.containsKey("isRead")){
+                isRead = bundle.containsKey("isRead");
+                article = (Article) bundle.get("Article");
+                if(article != null && article.Tags == null){
+                    article.Tags = new ArrayList<>();
+                }
+            }else if(bundle.containsKey("Article")){
+                article = (Article) bundle.get("Article");
+                if(article != null && article.Tags == null){
+                    article.Tags = new ArrayList<>();
+                }
             }
         }
 
 
-        TextView title = (TextView) findViewById(R.id.article_title);
+        TextView title = findViewById(R.id.article_title);
 
-        TextView content = (TextView) findViewById(R.id.article_content);
+        TextView content = findViewById(R.id.article_content);
         Html.ImageGetter imageGetter = new Html.ImageGetter() {
             @Override
             public Drawable getDrawable(String source) {
@@ -103,7 +102,7 @@ public class ArticleItemActivity extends AppCompatActivity {
         decideJustify(justify,content,title);
         decideSize(size,content,title);
         decideFamily(fontFamily, content,title);
-        final HashtagView tags = (HashtagView) findViewById(R.id.article_tag_view);
+        final HashtagView tags = findViewById(R.id.article_tag_view);
         if(!isRead){
             tags.addOnTagClickListener(new HashtagView.TagsClickListener() {
                 @Override
@@ -133,8 +132,7 @@ public class ArticleItemActivity extends AppCompatActivity {
                     @Override
                     public CharSequence prepare(Tag item) {
                         String label = item.Name;
-                        SpannableString spannableString = new SpannableString(label);
-                        return spannableString;
+                        return new SpannableString(label);
                     }
                 });
             }
@@ -176,17 +174,17 @@ public class ArticleItemActivity extends AppCompatActivity {
         switch (justify){
             case "Left":
                 for(TextView view: views) {
-                    view.setGravity(Gravity.LEFT);
+                    view.setGravity(Gravity.START);
                 }
                 break;
             case "Right":
                 for(TextView view: views) {
-                    view.setGravity(Gravity.LEFT);
+                    view.setGravity(Gravity.START);
                 }
                 break;
             default:
                 for(TextView view: views) {
-                    view.setGravity(Gravity.LEFT);
+                    view.setGravity(Gravity.START);
                 }
         }
     }
@@ -237,7 +235,7 @@ public class ArticleItemActivity extends AppCompatActivity {
         LayoutInflater factory = LayoutInflater.from(this);
         final View tagDialogView = factory.inflate(R.layout.add_tag_dialog, null);
         final AlertDialog tagDialog = new AlertDialog.Builder(this).create();
-        final MultiAutoCompleteTextView edit = (MultiAutoCompleteTextView) tagDialogView.findViewById(R.id.tag_dialog_edit);
+        final MultiAutoCompleteTextView edit = tagDialogView.findViewById(R.id.tag_dialog_edit);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.tag_suggestion, getAllTags());
         edit.setAdapter(adapter);
         edit.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
@@ -351,7 +349,7 @@ public class ArticleItemActivity extends AppCompatActivity {
 
         return true;
     }
-    public void shareItemURL(){
+    private void shareItemURL(){
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -360,24 +358,24 @@ public class ArticleItemActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(shareIntent,"Share Via"));
     }
 
-    public void saveArticle(){
+    private void saveArticle(){
         ArticleHelper articleHelper = new ArticleHelper(this);
         articleHelper.SaveArticle(article);
         Intent intent = new Intent(ArticleItemActivity.this, ArticleItemActivity.class);
         intent.putExtra("Article", article);
         startActivity(intent);
     }
-    public void deleteArticle(){
+    private void deleteArticle(){
         ArticleHelper articleHelper = new ArticleHelper(this);
         File file = new File(getFilesDir(), ArticleHelper.FILENAME + article.ID);
         articleHelper.DeleteArticle(file);
-        if(articleHelper.isExternalStorageReadable() && articleHelper.isExternalStorageWritable()){
+        if(ArticleHelper.isExternalStorageReadable() && ArticleHelper.isExternalStorageWritable()){
             file = new File(getExternalFilesDir(null), ArticleHelper.FILENAME + article.ID);
             articleHelper.DeleteArticle(file);
         }
         finish();
     }
-    public void openChrome(){
+    private void openChrome(){
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         TypedValue typedValue = new TypedValue();
         Resources.Theme theme = getTheme();

@@ -1,6 +1,5 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
-import android.app.ProgressDialog;
 import android.net.Uri;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -35,7 +34,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -52,10 +50,8 @@ import java.util.regex.Pattern;
 import static android.support.design.widget.Snackbar.LENGTH_SHORT;
 
 public class GoogleSignInActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
-    private static String TAG="GoogleSignInActivity";
+    private static final String TAG="GoogleSignInActivity";
     private static final int RC_SIGN_IN = 12501;
-    private SignInButton googleButton;
-    private Button signIn, register, reset;
     private TextView emailText, passwordText;
     private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth auth;
@@ -67,16 +63,16 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        googleButton = (SignInButton) findViewById(R.id.sign_in_button);
+        SignInButton googleButton = findViewById(R.id.sign_in_button);
         googleButton.setOnClickListener(this);
-        signIn = (Button) findViewById(R.id.sign_button);
+        Button signIn = findViewById(R.id.sign_button);
         signIn.setOnClickListener(this);
-        register = (Button) findViewById(R.id.reg_button);
+        Button register = findViewById(R.id.reg_button);
         register.setOnClickListener(this);
         emailText = (EditText) findViewById(R.id.email);
         passwordText = (EditText) findViewById(R.id.password);
 
-        reset = (Button) findViewById(R.id.button4);
+        Button reset = findViewById(R.id.button4);
         reset.setOnClickListener(this);
 
 
@@ -136,26 +132,26 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                 signInGoogle();
                 break;
             case R.id.sign_button:
-                if(!isVaildPassword(password) && !isVaildEmail(email)){
-                    emailText.setError("Invaild Email");
+                if(isPasswordNotValid(password) && !isValidEmail(email)){
+                    emailText.setError("Invalid Email");
                     passwordText.setError("Invalid Password");
                 }
-                else if(!isVaildEmail(email)){
+                else if(!isValidEmail(email)){
                     emailText.setError("Invalid Email");
-                }else if (!isVaildPassword(password)){
+                }else if (isPasswordNotValid(password)){
                     passwordText.setError("Invalid Password");
                 }else{
                     signInUser(email, password);
                 }
                 break;
             case R.id.reg_button:
-                if(!isVaildPassword(password) && !isVaildEmail(email)){
-                    emailText.setError("Invaild Email");
+                if(isPasswordNotValid(password) && !isValidEmail(email)){
+                    emailText.setError("Invalid Email");
                     passwordText.setError("Invalid Password");
                 }
-                else if(!isVaildEmail(email)){
+                else if(!isValidEmail(email)){
                     emailText.setError("Invalid Email");
-                }else if (!isVaildPassword(password)){
+                }else if (isPasswordNotValid(password)){
                     passwordText.setError("Invalid Password");
                 }else{
                     registerUser(email,password);
@@ -172,13 +168,14 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
                 if (!task.isSuccessful()) {
-                    Snackbar.make(getCurrentFocus(), task.getException().getMessage(), Snackbar.LENGTH_SHORT).show();
-
+                    if(getCurrentFocus() != null){
+                        Snackbar.make(getCurrentFocus(), task.getException().getMessage(), Snackbar.LENGTH_SHORT).show();
+                    }
                 }else{
                     String uid = task.getResult().getUser().getUid();
                     DatabaseReference userDB = FirebaseDatabase.getInstance().getReference("users");
 
-                    String hash = generateHash(email.toLowerCase().trim(), "md5");
+                    String hash = generateHash(email.toLowerCase().trim());
                     String image = "https://www.gravatar.com/avatar/"+hash+"?d=identicon";
 
                     Map<String, Object> users = new HashMap<>();
@@ -201,7 +198,8 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                 Log.d(TAG, "signUserInWithEmail:onComplete:" + task.isSuccessful());
                 if(!task.isSuccessful()){
                     Log.d(TAG, "signInUserWithEmail", task.getException());
-                    Snackbar.make(getCurrentFocus(), "Authentication Failed with Email and/or Password", Snackbar.LENGTH_SHORT).show();
+                    if(getCurrentFocus()!= null)
+                        Snackbar.make(getCurrentFocus(), "Authentication Failed with Email and/or Password", Snackbar.LENGTH_SHORT).show();
                 }
             }
         });
@@ -255,7 +253,9 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                 Log.d(TAG, "signInWithCredential:onComplete"+task.isSuccessful());
                 if(!task.isSuccessful()){
                     Log.w(TAG, "signInWithCredential", task.getException());
-                    Snackbar.make(getCurrentFocus(), "Authentication Failed.", LENGTH_SHORT).show();
+                    if(getCurrentFocus()!=null){
+                        Snackbar.make(getCurrentFocus(), "Authentication Failed.", LENGTH_SHORT).show();
+                    }
                 }else{
                     final String uid = task.getResult().getUser().getUid();
                     final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference("users");
@@ -264,7 +264,7 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if(!dataSnapshot.hasChild(uid)){
-                                String image = account.getPhotoUrl().toString();
+                                String image = Uri.decode(String.valueOf(account.getPhotoUrl()));
 
                                 Map<String, Object> users = new HashMap<>();
                                 Map<String, Object> data = new HashMap<>();
@@ -294,55 +294,53 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
         if(user != null){
             startActivity(new Intent(GoogleSignInActivity.this, MainActivity.class));
             finish();
-        }else{
-            //MAIN PAGE;
         }
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
-        Snackbar.make(getCurrentFocus(), "Google Play Services Error", LENGTH_SHORT).show();
+        if(getCurrentFocus()!= null)
+            Snackbar.make(getCurrentFocus(), "Google Play Services Error", LENGTH_SHORT).show();
 
     }
 
-    private boolean isVaildEmail(String email){
+    private boolean isValidEmail(String email){
         String EMAIL_PATTERN = "^(?=[a-zA-Z0-9][a-zA-Z0-9@._%+-]{5,253}+$)[a-zA-Z0-9._%+-]{1,64}+@(?:(?=[a-zA-Z0-9]{1,63}+\\.)[a-zA-Z0-9]++(?:-[a-zA-Z0-9]++)*+\\.){1,8}+[a-zA-Z]{2,63}+$";
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }
 
-    private boolean isVaildPassword(String password){
-        if(!password.isEmpty() && (password.length() > 6)){
-            return true;
-        }
-        return false;
+    private boolean isPasswordNotValid(String password){
+        return password.isEmpty() || (password.length() <= 6);
     }
 
-    private String generateHash(String message, String algorithm){
-        String original = message;
+    private String generateHash(String message){
         MessageDigest md = null;
         try {
-            md = MessageDigest.getInstance(algorithm);
+            md = MessageDigest.getInstance("md5");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        md.update(original.getBytes());
-        byte[] digest = md.digest();
-        StringBuffer sb = new StringBuffer();
-        for(byte b:digest){
-            sb.append(String.format("%02x", b & 0xff));
+        if (md != null) {
+            md.update(message.getBytes());
+            byte[] digest = md.digest();
+            StringBuilder sb = new StringBuilder();
+            for(byte b:digest){
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
         }
-        return sb.toString();
+        return "";
     }
 
     private void createResetDialog(){
         LayoutInflater factory = LayoutInflater.from(this);
         final View dialogView = factory.inflate(R.layout.change_username_dialog, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).create();
-        final AutoCompleteTextView change = (AutoCompleteTextView) dialogView.findViewById(R.id.editText);
-        TextView textView = (TextView) dialogView.findViewById(R.id.textView);
+        final AutoCompleteTextView change = dialogView.findViewById(R.id.editText);
+        TextView textView = dialogView.findViewById(R.id.textView);
         textView.setText("Forgotten password?");
         change.setHint("Enter account email to reset");
 
@@ -352,7 +350,7 @@ public class GoogleSignInActivity extends AppCompatActivity implements GoogleApi
             @Override
             public void onClick(View v) {
                 final String text = change.getText().toString();
-                if(isVaildEmail(text)){
+                if(isValidEmail(text)){
                     auth.sendPasswordResetEmail(text).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {

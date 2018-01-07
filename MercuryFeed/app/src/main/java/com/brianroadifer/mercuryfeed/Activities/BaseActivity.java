@@ -1,32 +1,24 @@
 package com.brianroadifer.mercuryfeed.Activities;
 
-import android.animation.Animator;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
-import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.brianroadifer.mercuryfeed.Helpers.ArticleHelper;
-import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
 import com.brianroadifer.mercuryfeed.Helpers.TagHelper;
 import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Feed;
@@ -36,10 +28,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -50,50 +40,45 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Created by Brian Roadifer on 6/28/2016.
- */
 public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener  {
-    public static final String TAG = "BaseActivity";
-    public static final String ANONYMOUS = "anonymous";
-    String mUsername;
-    String mPhotoUrl;
-    String mEmail;
+    private static final String TAG = "BaseActivity";
+    private static final String ANONYMOUS = "anonymous";
+    private String mUsername;
+    private String mPhotoUrl;
+    private String mEmail;
     private SharedPreferences preferences;
 
 
     FirebaseAuth fireAuth;
-    FirebaseUser firebaseUser;
+    private FirebaseUser firebaseUser;
 
-    private GoogleApiClient apiClient;
-
-    DatabaseReference feedsDB = FirebaseDatabase.getInstance().getReference().child("feeds");
-    DatabaseReference feedsItemDB = FirebaseDatabase.getInstance().getReference().child("feed_items");
-    DatabaseReference userFeedsDB;
-    public List<Feed> feeds = new ArrayList<>();
-    public List<String> subscribed = new ArrayList<>();
+    private final DatabaseReference feedsDB = FirebaseDatabase.getInstance().getReference().child("feeds");
+    final DatabaseReference feedsItemDB = FirebaseDatabase.getInstance().getReference().child("feed_items");
+    private DatabaseReference userFeedsDB;
+    final List<Feed> feeds = new ArrayList<>();
+    final List<String> subscribed = new ArrayList<>();
     ArticleHelper articleHelper;
     TagHelper tagHelper;
-    ImageView photo;
-    TextView username, email;
+    private ImageView photo;
+    private TextView username;
+    private TextView email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        String theme = pref.getString("app_screen", "Light");
-        String primary = pref.getString("app_primary", "Blue");
-        String accent = pref.getString("app_accent", "Blue");
-        String status = pref.getString("app_status", "Blue");
-        String navigation = pref.getString("app_navigation", "Black");
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String theme = preferences.getString("app_screen", "Light");
+        String primary = preferences.getString("app_primary", "Blue");
+        String accent = preferences.getString("app_accent", "Blue");
+        String status = preferences.getString("app_status", "Blue");
+        String navigation = preferences.getString("app_navigation", "Black");
         decideTheme(theme, primary, accent, status, navigation);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         articleHelper = new ArticleHelper(this);
         tagHelper = new TagHelper(this);
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
         mUsername = ANONYMOUS;
 
         fireAuth = FirebaseAuth.getInstance();
@@ -105,18 +90,17 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             return;
         }
         userFeedsDB = FirebaseDatabase.getInstance().getReference().child("users/"+ firebaseUser.getUid());
-        apiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this,this)
+        new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API).build();
-
         userFeedsDB.child("username").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"userName:OnDataChange:"+ dataSnapshot.getValue().toString());
                 mUsername = dataSnapshot.getValue().toString();
-                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                NavigationView navigationView = findViewById(R.id.nav_view);
                 View  ll = navigationView.getHeaderView(0);
-                username = (TextView) ll.findViewById(R.id.user_name);
+                username = ll.findViewById(R.id.user_name);
                 username.setText(dataSnapshot.getValue().toString());
                 username.setText(mUsername);
             }
@@ -130,9 +114,9 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"email:OnDataChange:"+ dataSnapshot.getValue().toString());
                 mEmail = dataSnapshot.getValue().toString();
-                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                NavigationView navigationView = findViewById(R.id.nav_view);
                 View  ll = navigationView.getHeaderView(0);
-                email = (TextView) ll.findViewById(R.id.user_email);
+                email = ll.findViewById(R.id.user_email);
                 email.setText(mEmail);
             }
 
@@ -145,9 +129,9 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG,"profilePicture:OnDataChange:"+ dataSnapshot.getValue().toString());
-                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                NavigationView navigationView = findViewById(R.id.nav_view);
                 View  ll = navigationView.getHeaderView(0);
-                photo = (ImageView) ll.findViewById(R.id.user_img);
+                photo = ll.findViewById(R.id.user_img);
                 mPhotoUrl = dataSnapshot.getValue().toString();
                 Picasso.with(getApplicationContext()).load(mPhotoUrl).placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher).resize(200,200).into(photo);
             }
@@ -198,7 +182,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                     }
                 }
                 Log.d(TAG,"onDataChange:value: " + feeds);
-                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                NavigationView navigationView = findViewById(R.id.nav_view);
                 navigationView.setNavigationItemSelectedListener(BaseActivity.this);
                 Menu menu = navigationView.getMenu();
                 for(final Feed fd : sortAscending()){
@@ -212,9 +196,9 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                     item.setIntent(intent);
                 }
                 View  ll = navigationView.getHeaderView(0);
-                photo = (ImageView) ll.findViewById(R.id.user_img);
-                username = (TextView) ll.findViewById(R.id.user_name);
-                email = (TextView) ll.findViewById(R.id.user_email);
+                photo = ll.findViewById(R.id.user_img);
+                username = ll.findViewById(R.id.user_name);
+                email = ll.findViewById(R.id.user_email);
 
             }
 
@@ -239,7 +223,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -249,7 +233,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle options_menu view item clicks here.
         int id = item.getItemId();
         switch (id) {
@@ -270,30 +254,20 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                     Toast.makeText(this, "Action is not working", Toast.LENGTH_SHORT).show();
                 }
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    public List<Feed> sortAscending(){
-        List<Feed> feedz = feeds;
-        Collections.sort(feedz, new Comparator<Feed>() {
+    private List<Feed> sortAscending(){
+        List<Feed> feeds = this.feeds;
+        Collections.sort(feeds, new Comparator<Feed>() {
             @Override
             public int compare(Feed f1, Feed f2) {
                 return f1.compareTo(f2);
             }
         });
-        return feedz;
-    }
-    public List<Feed> sortDescending(){
-        List<Feed> feedz = feeds;
-        Collections.sort(feedz, new Comparator<Feed>() {
-            @Override
-            public int compare(Feed f1, Feed f2) {
-                return f2.compareTo(f1);
-            }
-        });
-        return feedz;
+        return feeds;
     }
 
     @Override

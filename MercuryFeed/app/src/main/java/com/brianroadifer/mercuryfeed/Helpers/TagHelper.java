@@ -1,8 +1,6 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.brianroadifer.mercuryfeed.Models.Tag;
@@ -16,17 +14,14 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Brian Roadifer on 7/3/2016.
- */
 public class TagHelper {
 
     public final static String FILENAME = "mercury_tags_";
-    FileOutputStream fos;
-    ObjectOutputStream os;
-    FileInputStream fis;
-    ObjectInputStream is;
-    Context context;
+    private FileOutputStream fos;
+    private ObjectOutputStream os;
+    private FileInputStream fis;
+    private ObjectInputStream is;
+    private final Context context;
 
     public TagHelper(Context context){
         this.context = context;
@@ -36,7 +31,7 @@ public class TagHelper {
      * Save a single tag to read offline later
      * @param tag Article that is saved to the device
      */
-    public void SaveTag(Tag tag){
+    private void SaveTag(Tag tag){
         try {
             this.fos = this.context.openFileOutput(FILENAME + tag.ID, Context.MODE_PRIVATE);
             this.os = new ObjectOutputStream(this.fos);
@@ -55,7 +50,7 @@ public class TagHelper {
         }
     }
 
-    public Tag LoadTag(String fileName){
+    private Tag LoadTag(String fileName){
         Log.d("Tag:Load", "Loading " + fileName);
         try{
             this.fis = this.context.openFileInput(fileName);
@@ -65,10 +60,7 @@ public class TagHelper {
             this.fis.close();
             Log.d("Tag:Load", tag.Name + "was successfully loaded");
             return tag;
-        }catch (IOException e){
-            Log.e("Tag:ERROR", e.toString());
-            e.printStackTrace();
-        }catch (ClassNotFoundException e){
+        }catch (IOException | ClassNotFoundException e){
             Log.e("Tag:ERROR", e.toString());
             e.printStackTrace();
         }
@@ -93,7 +85,7 @@ public class TagHelper {
     /**
      * Delete a specific article
      * @param filename file that will be deleted
-     * @return
+     * @return boolean on state of tag
      */
     public boolean DeleteTag(String filename){
         Log.d("Tag:Delete", filename + " was successfully deleted" );

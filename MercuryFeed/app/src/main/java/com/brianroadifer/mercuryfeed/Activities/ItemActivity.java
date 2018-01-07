@@ -14,7 +14,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.RequiresPermission;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBar;
@@ -51,9 +50,14 @@ import java.util.regex.Pattern;
 
 public class ItemActivity extends AppCompatActivity {
 
-    String title,url,imageUrl,author,description,date;
-    Article article = new Article();
-    SharedPreferences pref;
+    private String title;
+    private String url;
+    private String imageUrl;
+    private String author;
+    private String description;
+    private String date;
+    private Article article = new Article();
+    private SharedPreferences pref;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -68,20 +72,26 @@ public class ItemActivity extends AppCompatActivity {
         decideTheme(theme, primary, accent, statusBar, navigation);
         Bundle bundle = getIntent().getExtras();
         setContentView(R.layout.activity_item);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.item_toolbar);
+        Toolbar toolbar = findViewById(R.id.item_toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
-        ab.setDisplayShowTitleEnabled(false);
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+            ab.setDisplayShowTitleEnabled(false);
+        }
 
-        imageUrl = bundle.getString("Image");
-        title = bundle.getString("Title");
-        author = bundle.getString("Author");
-        description = bundle.getString("Description");
-        date = formatDate((Timestamp) bundle.get("Date"));
-        url = bundle.getString("Link");
 
-        ImageView imageView = (ImageView) findViewById(R.id.item_image);
+        if (bundle != null) {
+            imageUrl = bundle.getString("Image");
+            title = bundle.getString("Title");
+            author = bundle.getString("Author");
+            description = bundle.getString("Description");
+            date = formatDate((Timestamp) bundle.get("Date"));
+            url = bundle.getString("Link");
+        }
+
+
+        ImageView imageView = findViewById(R.id.item_image);
 
         if(imageUrl.isEmpty()){
             imageView.setVisibility(View.GONE);
@@ -89,9 +99,9 @@ public class ItemActivity extends AppCompatActivity {
             Picasso.with(this).load(imageUrl).placeholder(R.drawable.placeholder).error(R.drawable.error).into(imageView);
         }
 
-        TextView titleView = (TextView) findViewById(R.id.item_title);
+        TextView titleView = findViewById(R.id.item_title);
         titleView.setText(title);
-        TextView descriptionView = (TextView) findViewById(R.id.item_description);
+        TextView descriptionView = findViewById(R.id.item_description);
         final PicassoImageGetter imageGetter = new PicassoImageGetter(descriptionView,getResources(), Picasso.with(getApplicationContext()));
         Html.ImageGetter nIm = new Html.ImageGetter() {
             @Override
@@ -103,8 +113,9 @@ public class ItemActivity extends AppCompatActivity {
         descriptionView.setText(Html.fromHtml(description, nIm, null));
 
         descriptionView.setMovementMethod(LinkMovementMethod.getInstance());
-        TextView infoView = (TextView) findViewById(R.id.item_info);
-        infoView.setText("by " + author + " / " + date);
+        TextView infoView = findViewById(R.id.item_info);
+        String byline = "by " + author + " / " + date;
+        infoView.setText(byline);
     }
 
     @Override
@@ -140,7 +151,7 @@ public class ItemActivity extends AppCompatActivity {
         
         return true;
     }
-    public void shareItemURL(){
+    private void shareItemURL(){
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -148,7 +159,7 @@ public class ItemActivity extends AppCompatActivity {
         shareIntent.putExtra(Intent.EXTRA_TEXT, url);
         startActivity(Intent.createChooser(shareIntent,"Share Via"));
     }
-    public void readMode(){
+    private void readMode(){
         final ReadArticle readArticle = new ReadArticle();
         final ProgressDialog progressDialog = new ProgressDialog(this, R.style.AppTheme_ProgressDialog);
         progressDialog.setMessage("Launching Read Mode");
@@ -163,9 +174,7 @@ public class ItemActivity extends AppCompatActivity {
                 readArticle.execute(url);
                 try {
                     article = readArticle.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
                 progressDialog.dismiss();
@@ -177,11 +186,11 @@ public class ItemActivity extends AppCompatActivity {
         }).start();
 
     }
-    public void saveArticle(){
+    private void saveArticle(){
         final ReadArticle readArticle = new ReadArticle();
 
         final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(),"save_article_channel");
         builder.setSmallIcon(R.drawable.ic_stat_download);
         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_download_icon);
         builder.setLargeIcon(bm);
@@ -199,12 +208,12 @@ public class ItemActivity extends AppCompatActivity {
                 String last5Str = tmpStr.substring(tmpStr.length() -6);
                 int notificationId = Integer.valueOf(last5Str);
                 readArticle.execute(url);
-                manager.notify(notificationId, builder.build());
+                if (manager != null) {
+                    manager.notify(notificationId, builder.build());
+                }
                 try {
                     article = readArticle.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
                 Intent intent = new Intent(getApplicationContext(), ArticleItemActivity.class);
@@ -216,7 +225,9 @@ public class ItemActivity extends AppCompatActivity {
                 builder.setContentTitle("Download complete");
                 builder.setAutoCancel(true);
                 builder.setVibrate(new long[]{0,200,0,200,0,0,200,200,100});
-                manager.notify(notificationId, builder.build());
+                if (manager != null) {
+                    manager.notify(notificationId, builder.build());
+                }
                 ArticleHelper ah = new ArticleHelper(getApplicationContext());
                 ah.SaveArticle(article);
                 Log.d("ItemActivity", "articleSize" + ArticleHelper.getOfflineArticleSize(getApplicationContext()));
@@ -224,7 +235,7 @@ public class ItemActivity extends AppCompatActivity {
         }).start();
     }
 
-    public void openInAppChrome(String url){
+    private void openInAppChrome(String url){
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         TypedValue toolBar = new TypedValue();
         getTheme().resolveAttribute(R.attr.colorPrimary, toolBar, true);
@@ -240,7 +251,7 @@ public class ItemActivity extends AppCompatActivity {
     }
 
 
-    public String formatDate(Timestamp timestamp){
+    private String formatDate(Timestamp timestamp){
         Date date = new Date(timestamp.getTime());
         SimpleDateFormat format;
         try {
@@ -276,9 +287,10 @@ public class ItemActivity extends AppCompatActivity {
 
         p = Pattern.compile("frameboarder=.*<i/frame>");
         m = p.matcher(html);
-        while (m.find());
+        while (m.find()) {
             html = m.replaceAll(">Watch</a>");
-        html= html.replace("a href=\\", "a href=");
+        }
+        html = html.replace("a href=\\", "a href=");
         return html;
     }
 

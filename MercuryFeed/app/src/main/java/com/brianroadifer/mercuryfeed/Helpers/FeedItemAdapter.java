@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.brianroadifer.mercuryfeed.Activities.ItemActivity;
-import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.Models.Item;
 import com.brianroadifer.mercuryfeed.R;
@@ -31,10 +30,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHolder> {
-    DatabaseReference feedItemDB = FirebaseDatabase.getInstance().getReference();
-    Feed feed;
-    Context context;
-    boolean sort;
+    private final DatabaseReference feedItemDB = FirebaseDatabase.getInstance().getReference();
+    private final Feed feed;
+    private final Context context;
+    private final boolean sort;
 
     public FeedItemAdapter(Feed feed,boolean sort, Context context) {
         this.feed = feed;
@@ -45,24 +44,24 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.row_news_item,parent,false);
-        ViewHolder holder = new ViewHolder(view);
-        return holder;
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         final Item current;
         if(sort){
-            current = feed.ItemsDesending().get(position);
+            current = feed.ItemsDescending().get(position);
 
         }else{
-            current = feed.ItemsAsending().get(position);
+            current = feed.ItemsAscending().get(position);
         }
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
         String themeName = pref.getString("app_screen", "Light");
         holder.Title.setText(current.title);
         try {
-            holder.Info.setText("by " + current.author + " : " + Difference(current.timestamp));
+            String byline = "by " + current.author + " : " + Difference(current.timestamp);
+            holder.Info.setText(byline);
 
         }catch (NullPointerException ne){
             holder.Info.setText("");
@@ -78,7 +77,6 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         }else{
             Picasso.with(context).load(current.thumbnailUrl).placeholder(R.drawable.placeholder).error(R.drawable.error).into(holder.Thumbnail);
         }
-
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,7 +91,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
                 Map<String,Object> read = new HashMap<>();
                 if(!feed.isSearch) {
-                    read.put("/feed_items/" + current.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid().toString(), true);
+                    read.put("/feed_items/" + current.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid(), true);
                     feedItemDB.updateChildren(read);
                     v.setActivated(true);
                     v.setAlpha(0.5f);
@@ -107,12 +105,12 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
                 @Override
                 public boolean onLongClick(View v) {
                     Map<String, Object> read = new HashMap<>();
-                    read.put("/feed_items/" + current.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid().toString(), !v.isActivated());
+                    read.put("/feed_items/" + current.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid(), !v.isActivated());
                     Snackbar snackbar;
                     if (v.isActivated()) {
                         snackbar = Snackbar.make(v, "Marked as unread", Snackbar.LENGTH_LONG);
                         View sv = snackbar.getView();
-                        TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                        TextView stv = sv.findViewById(android.support.design.R.id.snackbar_text);
                         stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
                         snackbar.show();
                         v.setAlpha(1f);
@@ -120,7 +118,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
                     } else {
                         snackbar = Snackbar.make(v, "Marked as read", Snackbar.LENGTH_LONG);
                         View sv = snackbar.getView();
-                        TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                        TextView stv = sv.findViewById(android.support.design.R.id.snackbar_text);
                         stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
                         snackbar.show();
                         v.setAlpha(0.5f);
@@ -148,18 +146,20 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener  {
-        TextView Title, Content, Info;
-        ImageView Thumbnail;
-        CardView cardView;
+        final TextView Title;
+        final TextView Content;
+        final TextView Info;
+        final ImageView Thumbnail;
+        final CardView cardView;
 
 
         public ViewHolder(View itemView) {
             super(itemView);
-            Title = (TextView)itemView.findViewById(R.id.news_title);
-            Content = (TextView) itemView.findViewById(R.id.news_content);
-            Info = (TextView)itemView.findViewById(R.id.news_info);
-            Thumbnail = (ImageView)itemView.findViewById(R.id.news_image);
-            cardView = (CardView) itemView.findViewById(R.id.card_view);
+            Title = itemView.findViewById(R.id.news_title);
+            Content = itemView.findViewById(R.id.news_content);
+            Info = itemView.findViewById(R.id.news_info);
+            Thumbnail = itemView.findViewById(R.id.news_image);
+            cardView = itemView.findViewById(R.id.card_view);
             itemView.setOnClickListener(this);
             if(!feed.isSearch)
                 itemView.setOnLongClickListener(this);
@@ -170,10 +170,10 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         public void onClick(View v) {
             Item item;
             if(sort){
-                item = feed.ItemsDesending().get(getAdapterPosition());
+                item = feed.ItemsDescending().get(getAdapterPosition());
 
             }else{
-                item = feed.ItemsAsending().get(getAdapterPosition());
+                item = feed.ItemsAscending().get(getAdapterPosition());
             }
             Intent intent = new Intent(context, ItemActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -186,7 +186,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
 
             Map<String,Object> read = new HashMap<>();
             if(!feed.isSearch) {
-                read.put("/feed_items/" + item.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid().toString(), true);
+                read.put("/feed_items/" + item.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid(), true);
                 feedItemDB.updateChildren(read);
                 v.setActivated(true);
                 v.setAlpha(0.5f);
@@ -198,17 +198,17 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
         public boolean onLongClick(View v) {
             Item item;
             if(sort){
-                item = feed.ItemsDesending().get(getAdapterPosition());
+                item = feed.ItemsDescending().get(getAdapterPosition());
             }else{
-                item = feed.ItemsAsending().get(getAdapterPosition());
+                item = feed.ItemsAscending().get(getAdapterPosition());
             }
             Map<String, Object> read = new HashMap<>();
-            read.put("/feed_items/" + item.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid().toString(), !v.isActivated());
+            read.put("/feed_items/" + item.ID + "/user-read/" + FirebaseAuth.getInstance().getCurrentUser().getUid(), !v.isActivated());
             Snackbar snackbar;
             if (v.isActivated()) {
                 snackbar = Snackbar.make(v, "Marked as unread", Snackbar.LENGTH_LONG);
                 View sv = snackbar.getView();
-                TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                TextView stv = sv.findViewById(android.support.design.R.id.snackbar_text);
                 stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
                 snackbar.show();
                 v.setAlpha(1f);
@@ -216,7 +216,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             } else {
                 snackbar = Snackbar.make(v, "Marked as read", Snackbar.LENGTH_LONG);
                 View sv = snackbar.getView();
-                TextView stv = (TextView) sv.findViewById(android.support.design.R.id.snackbar_text);
+                TextView stv = sv.findViewById(android.support.design.R.id.snackbar_text);
                 stv.setTextColor(context.getResources().getColor(R.color.article_background_white));
                 snackbar.show();
                 v.setAlpha(0.5f);
@@ -227,7 +227,7 @@ public class FeedItemAdapter extends RecyclerView.Adapter<FeedItemAdapter.ViewHo
             return true;
         }
     }
-    public String Difference(Timestamp timestamp){
+    private String Difference(Timestamp timestamp){
         Date current = Calendar.getInstance().getTime();
         long difference = current.getTime() - timestamp.getTime();
         int days = (int) (difference/(1000*60*60*24));

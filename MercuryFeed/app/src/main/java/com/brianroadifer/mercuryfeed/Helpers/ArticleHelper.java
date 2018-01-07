@@ -2,12 +2,8 @@ package com.brianroadifer.mercuryfeed.Helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.provider.OpenableColumns;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,19 +18,16 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Brian Roadifer on 7/3/2016.
- */
 public class ArticleHelper {
 
     public final static String FILENAME = "mercury_article_";
-    FileOutputStream fos;
-    ObjectOutputStream os;
-    FileInputStream fis;
-    ObjectInputStream is;
-    Context context;
-    SharedPreferences preferences;
-    String storage = "Internal";
+    private FileOutputStream fos;
+    private ObjectOutputStream os;
+    private FileInputStream fis;
+    private ObjectInputStream is;
+    private final Context context;
+    private final SharedPreferences preferences;
+    private String storage = "Internal";
 
     public ArticleHelper(Context context) {
         this.context = context;
@@ -95,7 +88,7 @@ public class ArticleHelper {
         }
     }
 
-    public Article LoadArticleInternal(File file) {
+    private Article LoadArticleInternal(File file) {
         Log.w("Article:Load", "Loading " + file.getName());
         try {
             this.fis = this.context.openFileInput(file.getName());
@@ -105,13 +98,12 @@ public class ArticleHelper {
             this.fis.close();
             Log.w("Article:Load", article.Title + "was successfully loaded");
             return article;
-        } catch (IOException e) {
-        } catch (ClassNotFoundException e) {
+        }catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
     }
-    public Article LoadArticleExternal(File file){
+    private Article LoadArticleExternal(File file){
         Log.w("Article:Load", "Loading " + file.getName());
         try {
             this.fis = new FileInputStream(file);
@@ -121,8 +113,7 @@ public class ArticleHelper {
             this.fis.close();
             Log.w("Article:Load", article.Title + "was successfully loaded");
             return article;
-        } catch (IOException e) {
-        } catch (ClassNotFoundException e) {
+        }catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
@@ -164,7 +155,7 @@ public class ArticleHelper {
      * Delete a specific article
      *
      * @param file file that will be deleted
-     * @return
+     * @return boolean on state of file
      */
     public boolean DeleteArticle(File file) {
         Log.w("Article:Delete", file.getName() + " was successfully deleted");

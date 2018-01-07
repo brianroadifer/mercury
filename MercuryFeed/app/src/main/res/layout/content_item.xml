@@ -22,14 +22,14 @@
         android:id="@+id/item_title"
         android:layout_alignParentTop="true"
         android:layout_marginBottom="16dp"
-        android:layout_alignParentLeft="true" />
+        android:layout_alignParentStart="true" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/item_info"
         android:layout_below="@+id/item_title"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_marginBottom="16dp" />
 
     <ImageView
@@ -37,10 +37,11 @@
         android:layout_height="wrap_content"
         android:id="@+id/item_image"
         android:layout_below="@+id/item_info"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:scaleType="fitCenter"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:contentDescription="article image"/>
 
 
 
@@ -49,11 +50,11 @@
         android:layout_height="wrap_content"
         android:id="@+id/item_description"
         android:layout_below="@+id/item_image"
-        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:linksClickable="true"
         android:layout_marginBottom="16dp"
         android:textColorHighlight="?android:colorAccent"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textIsSelectable="true"
         android:textColorLink="?android:colorPrimary"
         android:elegantTextHeight="true" />

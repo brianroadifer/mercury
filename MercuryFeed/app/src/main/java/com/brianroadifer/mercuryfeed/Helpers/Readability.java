@@ -1,8 +1,5 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
-import android.app.Notification;
-import android.support.v4.app.NotificationCompat;
-
 import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Metadata;
 
@@ -11,16 +8,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-/**
- * Created by Brian Roadifer on 6/29/2016.
- */
-
 
 public class Readability {
     private static final String CONTENT_SCORE = "readabilityContentScore";
@@ -89,8 +82,6 @@ public class Readability {
     private static void placeContentScore(Element node){
         node.attr(CONTENT_SCORE, Integer.toString(0));
 
-        int readability = 0;
-
         switch(node.tagName().toUpperCase()) {
             case "DIV":
                 incrementContentScore(node, 5);
@@ -149,7 +140,7 @@ public class Readability {
         }
         return weight;
     }
-    protected void prepDocument(){
+    private void prepDocument(){
         if(document.body() == null){
             document.body().appendElement("body");
         }
@@ -159,7 +150,7 @@ public class Readability {
         destroyBreaks(document.body());
         document.getElementsByTag("font").tagName("span");
     }
-    public static void destroyBreaks(Element element){
+    private static void destroyBreaks(Element element){
         element.html(element.html().replaceAll(Patterns.REGEX_KILL_BREAKS, "<br />"));
     }
     private static String getInnerText(Element element, boolean normalizeSpaces){
@@ -169,26 +160,23 @@ public class Readability {
         }
         return textContent;
     }
-    private static int getCharCount(Element element, String split){
-        if(split == null || split.length() == 0){
-            split = ",";
-        }
-        return getInnerText(element,true).split(split).length;
+    private static int getCharCount(Element element){
+        return getInnerText(element,true).split(",").length;
     }
     private String getArticleTitle(){
         Document document = this.document;
-        String curTitle = "";
-        String oriTitle = "";
+        String curTitle;
+        String oriTitle;
         curTitle = oriTitle = document.title();
         if(curTitle == null){
             curTitle = oriTitle = getInnerText(document.getElementsByTag("title").get(0), true);
         }
-        if(Pattern.matches("/ [\\|\\-] /", curTitle)){
+        if(Pattern.matches("/ [\\\\|\\-] /", curTitle)){
             curTitle = oriTitle.replace("/(.*)[\\|\\-] .*/gi", "$1");
         }
         if(curTitle.split(" ").length < 3){
             curTitle = oriTitle.replace("/[^\\|\\-]*[\\|\\-](.*)/gi", "$1");
-        }else if(curTitle.indexOf(": ") != -1){
+        }else if(curTitle.contains(": ")){
             Elements headings = document.select("h1,h2");
             String match = "";
             for (Element heading: headings){
@@ -227,14 +215,13 @@ public class Readability {
     }
     private void cleanConditionally(Element element, String tag){
             Elements tagList = getElementsByTag(element, tag);
-            int curTagsLength = tagList.size();
 
             for (Element node: tagList){
                 debug("Cleaning Conditionally (" + node.className() + ":" + node.id() + ")" + getContentScore(node));
                 int weight = getClassWeight(node);
                 if(weight < 0){
                     node.remove();
-                }else if(getCharCount(node, ",") < 10){
+                }else if(getCharCount(node) < 10){
                     int p = node.getElementsByTag("p").size();
                     int img = node.getElementsByTag("img").size();
                     int li = node.getElementsByTag("li").size();
@@ -295,10 +282,10 @@ public class Readability {
         return linkLength / textLength;
     }
 
-    protected Element grabArticle(boolean saveUnlikelyCanidates){
+    private Element grabArticle(boolean saveUnlikelyCandidates){
        for (Element node : document.getAllElements()) {
 
-           if (!saveUnlikelyCanidates) {
+           if (!saveUnlikelyCandidates) {
                String unlikelyMatch = node.className() + node.id();
                articleByline(node, unlikelyMatch);
                Matcher ucm = Patterns.get(Patterns.RegEx.UNLIKELY_CANDIDATES).matcher(unlikelyMatch);
@@ -321,9 +308,9 @@ public class Readability {
                }
            }
        }
-        Elements parapgraphs = document.getElementsByTag("p");
-        List<Element> canidates = new ArrayList<>();
-        for (Element para : parapgraphs) {
+        Elements paragraphs = document.getElementsByTag("p");
+        List<Element> candidates = new ArrayList<>();
+        for (Element para : paragraphs) {
             Element parent = para.parent();
             Element grandparent = parent.parent();
             String innerText = getInnerText(para, true);
@@ -332,11 +319,11 @@ public class Readability {
             }
             if (!parent.hasAttr(CONTENT_SCORE)) {
                 placeContentScore(parent);
-                canidates.add(parent);
+                candidates.add(parent);
             }
             if (!grandparent.hasAttr(CONTENT_SCORE)) {
                 placeContentScore(grandparent);
-                canidates.add(grandparent);
+                candidates.add(grandparent);
             }
                int score = 0;
                score++;
@@ -347,7 +334,7 @@ public class Readability {
         }
 
         Element top = null;
-        for(Element candidate: canidates){
+        for(Element candidate: candidates){
             scaleContentScore(candidate, 1-getLinkDensity(candidate));
             debug("Candidate: ("+candidate.className()+":"+candidate.id()+":"+getContentScore(candidate)+")");
             if (top == null || getContentScore(candidate) > getContentScore(top)){
@@ -367,14 +354,14 @@ public class Readability {
         int siblingScoreThreshold = Math.max(10, (int)(getContentScore(top) * 0.2f));
         Elements siblings = top.parent().children();
         for(Element sibling : siblings){
-            boolean append = true;
+            boolean append = false;
             debug("Sibling Node: ("+sibling.className()+":"+sibling.id()+":"+getContentScore(sibling)+")");
 
             if(sibling == top){
                 append = true;
             }
             if(getContentScore(sibling) >=siblingScoreThreshold){
-                append =true;
+                append = true;
             }
             if("p".equalsIgnoreCase(sibling.tagName())){
                 float density = getLinkDensity(sibling);
@@ -387,17 +374,17 @@ public class Readability {
                     append = true;
                 }
             }
+            debug("Appending Sibling: " + sibling);
             if(append){
-                debug("Appending Sibling: " + sibling);
                 articleContent.appendChild(sibling);
-                continue;
             }
+
         }
         prepArticle(articleContent);
         return articleContent;
     }
 
-    public static void cleanStyles(Element element){
+    private static void cleanStyles(Element element){
         if(element == null){
             return;
         }
@@ -468,7 +455,7 @@ public class Readability {
     public Article parse(){
         return parse(false);
     }
-    private Article parse(boolean keepUnlikelys){
+    private Article parse(boolean keepUnlikely){
         if(document.body() == null && cache == null){
             cache = document.body().html();
         }
@@ -494,9 +481,9 @@ public class Readability {
         title.html( );
         Element byline = document.createElement("h4");
         byline.html(article.ByLine);
-        Element articleContent = this.grabArticle(keepUnlikelys);
+        Element articleContent = this.grabArticle(keepUnlikely);
         if(getInnerText(articleContent, false).isEmpty()){
-            if(!keepUnlikelys){
+            if(!keepUnlikely){
                 document.body().html(cache);
                 return parse(true);
             }else{
@@ -515,7 +502,6 @@ public class Readability {
         overlay.appendChild(innerDiv);
         article.URL = "";
         article.Content = articleContent.text();
-        article.Excerpt = metadata.Excerpt;
         return article;
 
     }
@@ -532,23 +518,21 @@ public class Readability {
             return 0;
         }
     }
-    private static Element incrementContentScore(Element node, int increment) {
+    private static void incrementContentScore(Element node, int increment) {
         int score = getContentScore(node);
         score += increment;
         node.attr(CONTENT_SCORE, Integer.toString(score));
-        return node;
     }
-    private static Element scaleContentScore(Element node, float scale) {
+    private static void scaleContentScore(Element node, float scale) {
         int score = getContentScore(node);
         score *= scale;
         node.attr(CONTENT_SCORE, Integer.toString(score));
-        return node;
     }
-    protected void debug(String message){
+    void debug(String message){
         debug(message, null);
     }
-    protected void debug(String message, Throwable throwable){
-        System.out.println(message + (throwable != null ?("\n" + throwable.getMessage()) : "" )+(throwable != null? ("\n" + throwable.getStackTrace()): ""));
+    void debug(String message, Throwable throwable){
+        System.out.println(message + (throwable != null ?("\n" + throwable.getMessage()) : "" )+(throwable != null? ("\n" + Arrays.toString(throwable.getStackTrace())): ""));
     }
     private static class Patterns {
         private static Pattern unlikelyCandidates;
@@ -561,10 +545,10 @@ public class Readability {
         private static final String REGEX_REPLACE_BRS = "(?i)(<br[^>]*>[ \n\r\t]*){2,1}";
         private static final String REGEX_REPLACE_FONTS = "(?i)<(\\/font[^>]*>)";
         private static final String REGEX_NORMALIZE = "\\s{2,}";
-        private static final String REGEX_KILL_BREAKS = "(<br\\s*\\/?>(\\s|&nbsp;?)*){1,}";
+        private static final String REGEX_KILL_BREAKS = "(<br\\s*/?>(\\s|&nbsp;?)*)+";
 
         public enum RegEx{
-            UNLIKELY_CANDIDATES,BYLINE, OK_MAYBE_ITS_A_CANDIDATE,POSITIVE,NEGATIVE,DIV_TO_P_ELEMENTS,VIDEO;
+            UNLIKELY_CANDIDATES,BYLINE, OK_MAYBE_ITS_A_CANDIDATE,POSITIVE,NEGATIVE,DIV_TO_P_ELEMENTS,VIDEO
         }
         public static Pattern get(RegEx regEx){
             switch (regEx){
@@ -598,7 +582,7 @@ public class Readability {
                 }
                 case VIDEO: {
                     if (videos == null) {
-                        videos = Pattern.compile("http:\\/\\/(www\\.)?(youtube|vimeo)\\.com",Pattern.CASE_INSENSITIVE);
+                        videos = Pattern.compile("http://(www\\.)?(youtube|vimeo)\\.com",Pattern.CASE_INSENSITIVE);
                     }
                     return videos;
                 }

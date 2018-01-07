@@ -59,26 +59,26 @@ public class ArticleReceiverActivity extends AppCompatActivity {
             setContentView(R.layout.activity_article_receiver);
 
             Intent receivedIntent = getIntent();
-            String recievedAction = receivedIntent.getAction();
-            String recievedType = receivedIntent.getType();
+            String receivedAction = receivedIntent.getAction();
+            String receivedType = receivedIntent.getType();
             final String receivedText = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
-            final String receievedTitle = receivedIntent.getStringExtra(Intent.EXTRA_SUBJECT);
+            final String receivedTitle = receivedIntent.getStringExtra(Intent.EXTRA_SUBJECT);
 
             for (String s : receivedIntent.getExtras().keySet()) {
                 Log.d("DataReceiveActivity", "intent_extra_keys: " + s);
             }
             hideWindow();
 
-            if (recievedAction.equalsIgnoreCase(Intent.ACTION_SEND)) {
-                if (recievedType.startsWith("text/")) {
-                    if (receievedTitle != null && receivedText != null) {
+            if (receivedAction != null && receivedAction.equalsIgnoreCase(Intent.ACTION_SEND)) {
+                if (receivedType != null && receivedType.startsWith("text/")) {
+                    if (receivedTitle != null && receivedText != null) {
                         if(stored >= limit && !(limit <= -1)){
                             createWarningDialog(limit);
                         }else if(stored + 1 >= limit && !(limit <= -1)){
                             createOverLimitDialog(limit);
-                            createDialog(receievedTitle, receivedText);
+                            createDialog(receivedTitle, receivedText);
                         }else{
-                            createDialog(receievedTitle, receivedText);
+                            createDialog(receivedTitle, receivedText);
                         }
                     } else {
                         Toast.makeText(getApplicationContext(), "Sorry was unable to launch", Toast.LENGTH_LONG).show();
@@ -86,11 +86,9 @@ public class ArticleReceiverActivity extends AppCompatActivity {
                     }
 
                 } else {
-                    Toast.makeText(getApplicationContext(), recievedType + " is not supported", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), receivedType + " is not supported", Toast.LENGTH_LONG).show();
                     finish();
                 }
-
-            } else if (recievedAction.equalsIgnoreCase(Intent.ACTION_MAIN)) {
 
             }
         }else{
@@ -98,14 +96,14 @@ public class ArticleReceiverActivity extends AppCompatActivity {
         }
 
     }
-    private void createDialog(final String receievedTitle, final String receivedText){
+    private void createDialog(final String receivedTitle, final String receivedText){
         final LayoutInflater factory = LayoutInflater.from(this);
         final View dialogView = factory.inflate(R.layout.add_article_dialog, null);
         final AlertDialog dialog = new AlertDialog.Builder(this).create();
-        TextView title = (TextView) dialogView.findViewById(R.id.share_title);
-        TextView url = (TextView) dialogView.findViewById(R.id.share_url);
-        final MultiAutoCompleteTextView tags = (MultiAutoCompleteTextView) dialogView.findViewById(R.id.tag_maker);
-        title.setText(receievedTitle);
+        TextView title = dialogView.findViewById(R.id.share_title);
+        TextView url = dialogView.findViewById(R.id.share_url);
+        final MultiAutoCompleteTextView tags = dialogView.findViewById(R.id.tag_maker);
+        title.setText(receivedTitle);
         url.setText(receivedText);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.tag_suggestion, getAllTags());
@@ -122,12 +120,12 @@ public class ArticleReceiverActivity extends AppCompatActivity {
                 final ReadArticle readArticle = new ReadArticle();
 
                 final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                final NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
+                final NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), "article_receiver_channel");
                 builder.setSmallIcon(R.drawable.ic_stat_download);
                 Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_download_icon);
                 builder.setLargeIcon(bm);
                 builder.setContentTitle("Downloading Article");
-                builder.setContentText(receievedTitle);
+                builder.setContentText(receivedTitle);
                 builder.setGroup("GROUP_ARTICLE_DOWNLOAD");
                 builder.setGroupSummary(true);
                 builder.setOngoing(true);
@@ -144,13 +142,11 @@ public class ArticleReceiverActivity extends AppCompatActivity {
 
                         try {
                             article = readArticle.get();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (ExecutionException e) {
+                        } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                         }
 
-                        article.Title = receievedTitle;
+                        article.Title = receivedTitle;
                         ArticleHelper ah = new ArticleHelper(getApplicationContext());
                         String tag = tags.getText().toString();
                         String[] tags = tag.replaceAll("^[,\\s]+", "").split("[,\\s]+");
@@ -251,7 +247,7 @@ public class ArticleReceiverActivity extends AppCompatActivity {
     }
 
     private void hideWindow(){
-        RelativeLayout coordinatorLayout = (RelativeLayout) findViewById(R.id.article_receiver);
+        RelativeLayout coordinatorLayout = findViewById(R.id.article_receiver);
         coordinatorLayout.setVisibility(View.GONE);
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.alpha = 0f;

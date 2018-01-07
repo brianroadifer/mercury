@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/articleview"
+    android:id="@+id/article_view"
     android:useDefaultMargins="true"
     android:focusableInTouchMode="false"
     android:focusable="true"

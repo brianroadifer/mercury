@@ -2,20 +2,12 @@ package com.brianroadifer.mercuryfeed.Models;
 
 import android.support.annotation.NonNull;
 
-import com.google.firebase.database.Exclude;
-import com.google.firebase.database.IgnoreExtraProperties;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-/**
- * Created by Brian Roadifer on 6/24/2016.
- */
 public class Feed implements Serializable, Comparable<Feed>{
     public String Title;
     public String ID;
@@ -34,9 +26,9 @@ public class Feed implements Serializable, Comparable<Feed>{
 
     public String FeedUrl;
 
-    public List<Item> Items = new ArrayList<>();
+    public final List<Item> Items = new ArrayList<>();
 
-    public List<Item> ItemsAsending(){
+    public List<Item> ItemsAscending(){
 
         List<Item> items = Items;
         Collections.sort(items, new Comparator<Item>() {
@@ -48,7 +40,7 @@ public class Feed implements Serializable, Comparable<Feed>{
         return items;
     }
 
-    public List<Item> ItemsDesending(){
+    public List<Item> ItemsDescending(){
         List<Item> items = Items;
         Collections.sort(items, new Comparator<Item>() {
             @Override

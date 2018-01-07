@@ -2,10 +2,8 @@ package com.brianroadifer.mercuryfeed.Activities;
 
 import android.app.ProgressDialog;
 import android.app.SearchManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -18,21 +16,17 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.brianroadifer.mercuryfeed.Helpers.DatabaseHelper;
 import com.brianroadifer.mercuryfeed.Helpers.SearchAdapter;
 import com.brianroadifer.mercuryfeed.Helpers.ThemeChanger;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -42,10 +36,10 @@ import java.util.List;
 
 public class SearchResultsActivity extends AppCompatActivity {
     private static final String TAG = "SearchResultsActivity";
-    DatabaseReference feedDB = FirebaseDatabase.getInstance().getReference().child("feeds");
-    List<Feed> feeds = new ArrayList<>();
-    List<Feed> queryFeed = new ArrayList<>();
-    ProgressDialog progressDialog;
+    private final DatabaseReference feedDB = FirebaseDatabase.getInstance().getReference().child("feeds");
+    private final List<Feed> feeds = new ArrayList<>();
+    private final List<Feed> queryFeed = new ArrayList<>();
+    private ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +51,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         String navigation = pref.getString("app_navigation", "Black");
         decideTheme(theme, primary, accent, status, navigation);
         setContentView(R.layout.activity_search_results);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         setTitle("Search Results");
@@ -128,7 +122,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                     queryFeed.add(feed);
                 }
             }
-            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+            RecyclerView recyclerView = findViewById(R.id.recycler_view);
             SearchAdapter searchAdapter = new SearchAdapter(queryFeed, this);
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
             recyclerView.setLayoutManager(layoutManager);
@@ -151,12 +145,12 @@ public class SearchResultsActivity extends AppCompatActivity {
         LayoutInflater factory = LayoutInflater.from(this);
         final View feedDialogView = factory.inflate(R.layout.add_feed_dialog, null);
         final AlertDialog feedDialog = new AlertDialog.Builder(this).create();
-        final EditText addSearch = (EditText) feedDialogView.findViewById(R.id.feed_dialog_search);
-        final AutoCompleteTextView addTitle = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_title);
-        final AutoCompleteTextView addUrl = (AutoCompleteTextView) feedDialogView.findViewById(R.id.feed_dialog_url);
-        Button button = (Button) feedDialogView.findViewById(R.id.tag_dialog_btn_yes);
+        final EditText addSearch = feedDialogView.findViewById(R.id.feed_dialog_search);
+        final AutoCompleteTextView addTitle = feedDialogView.findViewById(R.id.feed_dialog_title);
+        final AutoCompleteTextView addUrl = feedDialogView.findViewById(R.id.feed_dialog_url);
+        Button button = feedDialogView.findViewById(R.id.tag_dialog_btn_yes);
         button.setText("Search");
-        TextView textView = (TextView) feedDialogView.findViewById(R.id.textView2);
+        TextView textView = feedDialogView.findViewById(R.id.textView2);
         textView.setText("Search Feeds");
         addTitle.setVisibility(View.GONE);
         addUrl.setVisibility(View.GONE);

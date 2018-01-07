@@ -1,11 +1,9 @@
 package com.brianroadifer.mercuryfeed.Helpers;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +13,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.brianroadifer.mercuryfeed.Activities.MainActivity;
-import com.brianroadifer.mercuryfeed.Models.Article;
 import com.brianroadifer.mercuryfeed.Models.Feed;
 import com.brianroadifer.mercuryfeed.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,21 +22,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Brian Roadifer on 7/20/2016.
- */
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
     private static final String TAG = "SearchAdapter";
-    List<Feed> feeds;
-    Map<String, Boolean> subscribed = new HashMap<>();
-    Context context;
-    FirebaseAuth auth = FirebaseAuth.getInstance();
-    DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("/users/"+auth.getCurrentUser().getUid()+"/subscribed");
+    private final List<Feed> feeds;
+    private final Map<String, Boolean> subscribed = new HashMap<>();
+    private final Context context;
+    private final FirebaseAuth auth = FirebaseAuth.getInstance();
+    private final DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("/users/"+auth.getCurrentUser().getUid()+"/subscribed");
 
     public SearchAdapter(List<Feed> feeds, Context context){
         this.feeds = feeds;
@@ -64,16 +57,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
                     subscribed.put(child.getKey(), (boolean) dataSnapshot.child(child.getKey()).getValue());
                 }
 
-                if (current != null) {
-                    holder.Title.setText(current.Title);
-                    if(subscribed.containsKey(current.ID)) {
-                        holder.Subscribe.setChecked(subscribed.get(current.ID));
-                        holder.Subscribe.setText("Unsubscribe");
-                    }else {
-                        holder.Subscribe.setChecked(false);
-                        holder.Subscribe.setActivated(false);
-                        holder.Subscribe.setText("Subscribe");
-                    }
+                holder.Title.setText(current.Title);
+                if(subscribed.containsKey(current.ID)) {
+                    holder.Subscribe.setChecked(subscribed.get(current.ID));
+                    holder.Subscribe.setText("Unsubscribe");
+                }else {
+                    holder.Subscribe.setChecked(false);
+                    holder.Subscribe.setActivated(false);
+                    holder.Subscribe.setText("Subscribe");
                 }
                 holder.Subscribe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
@@ -115,14 +106,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
-        TextView Title;
-        Switch Subscribe;
-        RelativeLayout searchResult;
+        final TextView Title;
+        final Switch Subscribe;
+        final RelativeLayout searchResult;
         public ViewHolder(View view){
             super(view);
-            Title = (TextView) view.findViewById(R.id.search_title);
-            Subscribe = (Switch) view.findViewById(R.id.search_subscribe_switch);
-            searchResult = (RelativeLayout) view.findViewById(R.id.search_result);
+            Title = view.findViewById(R.id.search_title);
+            Subscribe = view.findViewById(R.id.search_subscribe_switch);
+            searchResult = view.findViewById(R.id.search_result);
         }
 
         @Override

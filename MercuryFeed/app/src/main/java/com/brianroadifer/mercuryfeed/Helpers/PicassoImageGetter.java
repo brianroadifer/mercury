@@ -3,7 +3,6 @@ package com.brianroadifer.mercuryfeed.Helpers;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -12,14 +11,11 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-/**
- * Created by Brian Roadifer on 7/21/2016.
- */
 public class PicassoImageGetter implements Html.ImageGetter {
 
-    final Picasso picasso;
-    final Resources resources;
-    final TextView textView;
+    private final Picasso picasso;
+    private final Resources resources;
+    private final TextView textView;
 
     public PicassoImageGetter(TextView textView, Resources resources, Picasso picasso){
         this.picasso = picasso;
@@ -31,7 +27,8 @@ public class PicassoImageGetter implements Html.ImageGetter {
     public Drawable getDrawable(final String source) {
         final BitmapDrawablePlaceholder result = new BitmapDrawablePlaceholder();
 
-        new AsyncTask<Void, Void, Bitmap>() {
+        AsyncTask<Void,Void,Bitmap> drawable;
+        drawable = new AsyncTask<Void, Void, Bitmap>() {
 
             @Override
             protected Bitmap doInBackground(final Void... meh) {
@@ -52,11 +49,12 @@ public class PicassoImageGetter implements Html.ImageGetter {
                     result.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
                     textView.setText(textView.getText());
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 
-        }.execute((Void) null);
-
+        };
+        drawable.execute((Void) null);
         return result;
     }
 

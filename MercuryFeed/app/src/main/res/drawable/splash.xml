@@ -4,7 +4,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/ic_launcher"
+            android:src="@drawable/ic_launcher_foreground"
             android:tileMode="disabled" />
     </item>
 </layer-list>
