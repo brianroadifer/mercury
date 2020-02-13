@@ -1,6 +1,7 @@
-Mercury Feed is a RSS Feed Reader with the added capability to save articles offline and share features
+# Mercury Feed 
+a RSS Feed Reader with the added capability to save articles offline and share features
 
-### Libriaries 
+## Libraries 
 - Android
 - Firebase 
   - database
@@ -13,4 +14,4 @@ Mercury Feed is a RSS Feed Reader with the added capability to save articles off
   - HTML Markup reader
 
 
-Feed collection is turned off but the database is still live
+**Feed collection is turned off but the database is still live**
