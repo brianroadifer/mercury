@@ -1,3 +1,5 @@
+# **ARCHIVED**
+
 # Mercury Feed 
 a RSS Feed Reader with the added capability to save articles offline and share features
 
@@ -13,5 +15,3 @@ a RSS Feed Reader with the added capability to save articles offline and share f
 - JSOUP
   - HTML Markup reader
 
-
-**Feed collection is turned off but the database is still live**
